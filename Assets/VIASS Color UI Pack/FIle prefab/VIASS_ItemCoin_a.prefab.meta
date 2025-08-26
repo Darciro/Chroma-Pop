@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 099fa2d3049e0654db029f2f114a02db
+timeCreated: 1551241600
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ItemCoin_a.prefab
+  uploadId: 299542

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: adba6136145267f4f9e94382fd26b5c6
+timeCreated: 1551241394
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ButtonArrowLeftM_2.prefab
+  uploadId: 299542

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: c85849eacc2afdc45b03bdc9653af31a
+timeCreated: 1551241623
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ItemSprings.prefab
+  uploadId: 299542

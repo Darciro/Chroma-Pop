@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: e31706728d06f2347972f29c722b08cf
+timeCreated: 1551241583
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_CopperMedal.prefab
+  uploadId: 299542

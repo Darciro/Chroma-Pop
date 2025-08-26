@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a76dd3740bc08724393a18e498fc6c92
+timeCreated: 1552372065
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ShopBackground_4.prefab
+  uploadId: 299542

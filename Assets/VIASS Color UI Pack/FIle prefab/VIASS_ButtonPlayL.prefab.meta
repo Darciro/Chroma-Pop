@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: fd3dd95924a8fe3468b9912e9b2d39f0
+timeCreated: 1551241418
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ButtonPlayL.prefab
+  uploadId: 299542

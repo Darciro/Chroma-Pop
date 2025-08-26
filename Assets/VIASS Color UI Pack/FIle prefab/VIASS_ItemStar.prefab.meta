@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3259a9fee6274df4197c86eb1ee0432e
+timeCreated: 1551241625
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ItemStar.prefab
+  uploadId: 299542

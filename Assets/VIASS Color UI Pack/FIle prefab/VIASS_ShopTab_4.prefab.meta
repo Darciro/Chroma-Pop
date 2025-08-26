@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: aab0921c6361a96418a49a5aae6b7127
+timeCreated: 1552372070
+licenseType: Store
+NativeFormatImporter:
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 140810
+  packageName: VIASS Color UI Pack
+  packageVersion: 1.01
+  assetPath: Assets/VIASS Color UI Pack/FIle prefab/VIASS_ShopTab_4.prefab
+  uploadId: 299542
