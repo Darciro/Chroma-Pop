@@ -292,70 +292,68 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalloonController
   floatSpeed: 5
   balloonColorData:
-  - color: 0
-    balloonSprite: {fileID: 4028777013200561245, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
-    popAnimationSprites:
+  - _color: 0
+    _balloonSprite: {fileID: 4028777013200561245, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
+    _popAnimationSprites:
     - {fileID: 4028777013200561245, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
     - {fileID: -7174074501070285113, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
     - {fileID: -3477539392765201191, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
     - {fileID: -9039706019753848304, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
     - {fileID: 9062012143149243484, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
     - {fileID: 9011522442549006599, guid: 6ac301bea6f437c49b5268c159245499, type: 3}
-  - color: 1
-    balloonSprite: {fileID: 8063721032298339121, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
-    popAnimationSprites:
+  - _color: 1
+    _balloonSprite: {fileID: 8063721032298339121, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
+    _popAnimationSprites:
     - {fileID: 8063721032298339121, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
     - {fileID: -7432276799500221060, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
     - {fileID: 5307571140790734220, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
     - {fileID: -9126197699390674243, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
     - {fileID: -7837971681837134933, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
     - {fileID: 717535922123385440, guid: 38ac4ef16ba4f734390664dced9b19c5, type: 3}
-  - color: 2
-    balloonSprite: {fileID: -7554038046840537500, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
-    popAnimationSprites:
+  - _color: 2
+    _balloonSprite: {fileID: -7554038046840537500, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
+    _popAnimationSprites:
     - {fileID: -7554038046840537500, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
     - {fileID: 9072500044576007291, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
     - {fileID: 4164386849127115783, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
     - {fileID: -4233657189216032953, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
     - {fileID: -2249767938951051036, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
     - {fileID: -6865810090730059215, guid: d7b33c83a65488f4b9cf23b64f382d03, type: 3}
-  - color: 3
-    balloonSprite: {fileID: -7757037476273323747, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
-    popAnimationSprites:
+  - _color: 3
+    _balloonSprite: {fileID: -7757037476273323747, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
+    _popAnimationSprites:
     - {fileID: -7757037476273323747, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
     - {fileID: -7386391256933854135, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
     - {fileID: -2121702801126248390, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
     - {fileID: -6808403899908095383, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
     - {fileID: -6827455988024975134, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
     - {fileID: 5302915643908986172, guid: 3ee15a3b3aab47f4ea6a24215c673c52, type: 3}
-  - color: 4
-    balloonSprite: {fileID: -4897696469403412238, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
-    popAnimationSprites:
+  - _color: 4
+    _balloonSprite: {fileID: -4897696469403412238, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
+    _popAnimationSprites:
     - {fileID: -4897696469403412238, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
     - {fileID: -5076268299789885997, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
     - {fileID: 5391446538511463938, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
     - {fileID: -3332900628248475044, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
     - {fileID: 474260376803639698, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
     - {fileID: 3519044367965831719, guid: 759959ba59bcec249a8f86e984ee505a, type: 3}
-  - color: 5
-    balloonSprite: {fileID: 7230304705262697746, guid: da7390d25f7012144982cd08618effc7, type: 3}
-    popAnimationSprites:
+  - _color: 5
+    _balloonSprite: {fileID: 7230304705262697746, guid: da7390d25f7012144982cd08618effc7, type: 3}
+    _popAnimationSprites:
     - {fileID: 7230304705262697746, guid: da7390d25f7012144982cd08618effc7, type: 3}
     - {fileID: -5614180308956676613, guid: da7390d25f7012144982cd08618effc7, type: 3}
     - {fileID: 2130578209350987416, guid: da7390d25f7012144982cd08618effc7, type: 3}
     - {fileID: -5566491678823996274, guid: da7390d25f7012144982cd08618effc7, type: 3}
     - {fileID: -8408456256157142944, guid: da7390d25f7012144982cd08618effc7, type: 3}
     - {fileID: 2359616060350756121, guid: da7390d25f7012144982cd08618effc7, type: 3}
-  - color: 6
-    balloonSprite: {fileID: -1692060645482559360, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
-    popAnimationSprites:
+  - _color: 6
+    _balloonSprite: {fileID: -1692060645482559360, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
+    _popAnimationSprites:
     - {fileID: -1692060645482559360, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
     - {fileID: 1825590577156185066, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
     - {fileID: -4883783549447461424, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
     - {fileID: -2414098933578059368, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
     - {fileID: -2357653879956194671, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
     - {fileID: 5779361583931276379, guid: ef4d5c7714c660f4e9029c797e04b14c, type: 3}
-  currentBalloonColorData:
-    color: 0
-    balloonSprite: {fileID: 0}
-    popAnimationSprites: []
+  popAnimationFrameRate: 12
+  destroyDelay: 1.5

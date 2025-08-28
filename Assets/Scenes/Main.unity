@@ -241,7 +241,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 140.92596, w: 0}
+  m_margin: {x: -11.689125, y: 0, z: 125.97502, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -300,7 +300,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BalloonSpawner
   balloonPrefab: {fileID: 1073219641232044109, guid: e5045036dfaf985468925261193fe7b5, type: 3}
-  spawnIntervalMin: 0.1
+  spawnIntervalMin: 0.01
   spawnIntervalMax: 1
   xMin: -2.5
   xMax: 2.5
@@ -564,7 +564,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &253531099
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1281,6 +1281,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1f00a2a0cb13324385d3e5e0aa5fbb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  balloonLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!4 &636294866
 Transform:
   m_ObjectHideFlags: 0
@@ -1689,11 +1692,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   scoreText: {fileID: 1289078289}
   healthText: {fileID: 15960029}
-  startingHealth: 3
+  finalScoreText: {fileID: 1065926305}
+  gameOverScreen: {fileID: 253531098}
   sequenceContainerGrid: {fileID: 352553458}
   colorTargetPrefab: {fileID: 7712221873477555895, guid: a7244abb71a507049b14ed0176b62f75, type: 3}
-  gameOverScreen: {fileID: 253531098}
-  gameStarted: 0
+  startingHealth: 3
+  sequenceLength: 3
+  sequenceCompletionBonus: 10
 --- !u!1 &1269766760
 GameObject:
   m_ObjectHideFlags: 0
@@ -1970,7 +1975,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 140.92596, w: 0}
+  m_margin: {x: -11.622978, y: 0, z: 129.91467, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2696,10 +2701,10 @@ RectTransform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 51660558}
+  - {fileID: 1269766763}
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1268170905}
   - {fileID: 636294866}
   - {fileID: 48169661}
-  - {fileID: 1269766763}
-  - {fileID: 51660558}

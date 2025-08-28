@@ -1,150 +1,203 @@
 using System.Collections;
+using ChromaPop.Core;
 using UnityEngine;
+using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
 
-[System.Serializable]
-public class BalloonColorData
+namespace ChromaPop.Gameplay
 {
-    public BalloonColorEnum color;
-    public Sprite balloonSprite;          // The main balloon sprite
-    public Sprite[] popAnimationSprites; // Array of sprites for pop animation
-}
-public class BalloonController : MonoBehaviour
-{
-    public float floatSpeed = 3f;
-    [SerializeField] private BalloonColorData[] balloonColorData;
-    [SerializeField] private BalloonColorData currentBalloonColorData;
-
-    private Animator animator;
-    private AudioSource audioSource;
-    private Rigidbody2D rb;
-    private SpriteRenderer spriteRenderer;
-
-    void Awake()
+    [System.Serializable]
+    public class BalloonColorData
     {
-        animator = GetComponent<Animator>();
-        audioSource = GetComponent<AudioSource>();
-        rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        [SerializeField] private BalloonColorEnum _color;
+        [SerializeField] private Sprite _balloonSprite;
+        [SerializeField] private Sprite[] _popAnimationSprites;
 
-        if (spriteRenderer == null)
+        public BalloonColorEnum Color => _color;
+        public Sprite BalloonSprite => _balloonSprite;
+        public Sprite[] PopAnimationSprites => _popAnimationSprites;
+    }
+
+    /// <summary>
+    /// Controls the behavior of balloons including movement, color setting, and popping animation.
+    /// </summary>
+    public class BalloonController : MonoBehaviour
+    {
+        [Header("Movement Settings")]
+        [SerializeField] private float floatSpeed = 3f;
+
+        [Header("Color Configuration")]
+        [SerializeField] private BalloonColorData[] balloonColorData;
+
+        [Header("Animation Settings")]
+        [SerializeField] private float popAnimationFrameRate = 12f;
+        [SerializeField] private float destroyDelay = 1.5f;
+
+        private BalloonColorData currentBalloonColorData;
+        private Animator animator;
+        private AudioSource audioSource;
+        private Rigidbody2D rigidBody;
+        private SpriteRenderer spriteRenderer;
+        private Collider2D balloonCollider;
+        private bool isPopped = false;
+
+        private void Awake()
         {
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            CacheComponents();
         }
-    }
 
-    void FixedUpdate()
-    {
-        transform.Translate(Vector3.up * floatSpeed * Time.deltaTime);
-    }
-
-    public void SetBalloonColor(BalloonColorEnum color)
-    {
-        // Find the matching color data
-        BalloonColorData colorData = GetBalloonColorData(color);
-        if (colorData != null)
+        private void FixedUpdate()
         {
-            currentBalloonColorData = colorData;
-
-            if (spriteRenderer != null && colorData.balloonSprite != null)
+            if (!isPopped)
             {
-                spriteRenderer.sprite = colorData.balloonSprite;
-                spriteRenderer.color = Color.white;
-
-                // Force the SpriteRenderer to update
-                spriteRenderer.enabled = false;
-                spriteRenderer.enabled = true;
-
-                if (animator != null && animator.runtimeAnimatorController != null && animator.enabled)
-                {
-                    animator.enabled = false;
-                }
+                transform.Translate(Vector3.up * floatSpeed * Time.deltaTime);
             }
         }
-        else
-        {
-            Debug.LogError($"No BalloonColorData found for color {color}. Make sure the balloonColorData array is properly set up in the Inspector.");
-        }
-    }
 
-    private BalloonColorData GetBalloonColorData(BalloonColorEnum color)
-    {
-        if (balloonColorData == null || balloonColorData.Length == 0)
+        private void CacheComponents()
         {
-            Debug.LogError("BalloonColorData array is null or empty! Please set it up in the Inspector.");
+            animator = GetComponent<Animator>();
+            audioSource = GetComponent<AudioSource>();
+            rigidBody = GetComponent<Rigidbody2D>();
+            balloonCollider = GetComponent<Collider2D>();
+            spriteRenderer = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+
+            if (spriteRenderer == null)
+            {
+                Debug.LogError($"No SpriteRenderer found on {gameObject.name}. Balloon will not display correctly.", this);
+            }
+        }
+
+        public void SetBalloonColor(BalloonColorEnum color)
+        {
+            BalloonColorData colorData = GetBalloonColorData(color);
+            if (colorData == null)
+            {
+                Debug.LogError($"No BalloonColorData found for color {color}. Make sure the balloonColorData array is properly configured.", this);
+                return;
+            }
+
+            currentBalloonColorData = colorData;
+            ApplyBalloonSprite(colorData);
+        }
+
+        private void ApplyBalloonSprite(BalloonColorData colorData)
+        {
+            if (spriteRenderer == null || colorData.BalloonSprite == null) return;
+
+            spriteRenderer.sprite = colorData.BalloonSprite;
+            spriteRenderer.color = Color.white;
+
+            // Disable animator if we're using sprite-based coloring
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                animator.enabled = false;
+            }
+        }
+
+        private BalloonColorData GetBalloonColorData(BalloonColorEnum color)
+        {
+            if (balloonColorData == null || balloonColorData.Length == 0)
+            {
+                Debug.LogError("BalloonColorData array is null or empty! Configure it in the Inspector.", this);
+                return null;
+            }
+
+            foreach (var data in balloonColorData)
+            {
+                if (data != null && data.Color == color)
+                {
+                    return data;
+                }
+            }
+
             return null;
         }
 
-        for (int i = 0; i < balloonColorData.Length; i++)
+        public BalloonColorEnum GetBalloonColor()
         {
-            if (balloonColorData[i] != null && balloonColorData[i].color == color)
+            return currentBalloonColorData?.Color ?? BalloonColorEnum.Blue;
+        }
+
+        public void Pop()
+        {
+            if (isPopped) return;
+
+            isPopped = true;
+            PlayPopSound();
+            PlayPopAnimation();
+            DisableInteraction();
+            NotifyGameManager();
+            ScheduleDestroy();
+        }
+
+        private void PlayPopSound()
+        {
+            if (audioSource != null)
             {
-                return balloonColorData[i];
+                audioSource.Play();
             }
         }
-        return null;
-    }
 
-    public BalloonColorEnum GetBalloonColor()
-    {
-        return currentBalloonColorData != null ? currentBalloonColorData.color : BalloonColorEnum.Blue;
-    }
-
-
-    public void PlayPopAnimation()
-    {
-        if (currentBalloonColorData != null && currentBalloonColorData.popAnimationSprites.Length > 0)
+        private void PlayPopAnimation()
         {
-            StartCoroutine(PlaySpriteAnimation(currentBalloonColorData.popAnimationSprites));
-        }
-    }
-
-    private IEnumerator PlaySpriteAnimation(Sprite[] sprites)
-    {
-        float frameRate = 12f;
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            if (spriteRenderer != null && sprites[i] != null)
+            if (HasCustomPopAnimation())
             {
-                spriteRenderer.sprite = sprites[i];
+                StartCoroutine(PlaySpriteAnimation(currentBalloonColorData.PopAnimationSprites));
             }
-            yield return new WaitForSeconds(1f / frameRate);
+            else if (animator != null)
+            {
+                animator.enabled = true;
+                animator.SetTrigger("Pop");
+            }
         }
-    }
 
-    public void Pop()
-    {
-        audioSource.Play();
+        private bool HasCustomPopAnimation()
+        {
+            return currentBalloonColorData?.PopAnimationSprites != null &&
+                   currentBalloonColorData.PopAnimationSprites.Length > 0;
+        }
 
-        if (currentBalloonColorData != null && currentBalloonColorData.popAnimationSprites != null && currentBalloonColorData.popAnimationSprites.Length > 0)
+        private IEnumerator PlaySpriteAnimation(Sprite[] sprites)
         {
             if (animator != null)
+            {
                 animator.enabled = false;
+            }
 
-            PlayPopAnimation();
+            foreach (var sprite in sprites)
+            {
+                if (spriteRenderer != null && sprite != null)
+                {
+                    spriteRenderer.sprite = sprite;
+                }
+                yield return new WaitForSeconds(1f / popAnimationFrameRate);
+            }
         }
-        else if (animator != null)
+
+        private void DisableInteraction()
         {
-            animator.enabled = true;
-            animator.SetTrigger("Pop");
+            if (balloonCollider != null)
+            {
+                balloonCollider.enabled = false;
+            }
+
+            if (rigidBody != null)
+            {
+                rigidBody.gravityScale = 1f;
+            }
         }
 
-        if (rb != null)
+        private void NotifyGameManager()
         {
-            rb.gravityScale = 1f;
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.ValidateScore(GetBalloonColor());
+            }
         }
 
-        // Handle the score
-        if (GameManager.Instance == null)
+        private void ScheduleDestroy()
         {
-            return;
+            Destroy(gameObject, destroyDelay);
         }
-        GameManager.Instance.ValidateScore(currentBalloonColorData.color);
-
-        // Disable the sprite and collider immediately so it can't be popped again
-        GetComponent<Collider2D>().enabled = false;
-
-        // Destroy the balloon object after the sound has had time to play
-        Destroy(gameObject, 1.5f);
     }
 }

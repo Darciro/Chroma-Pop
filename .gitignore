@@ -8,6 +8,8 @@
 [Uu]serSettings/
 MemoryCaptures/
 Assets/StreamingAssets/aa.meta
+.utmp/
+Assets/_Recovery*
 
 # ========== Unity Cache ==========
 *.pidb

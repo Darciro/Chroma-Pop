@@ -1,11 +1,16 @@
-// Shared enum for balloon colors used across the project.
-public enum BalloonColorEnum
+namespace ChromaPop.Core
 {
-    Blue,
-    Green,
-    Orange,
-    Pink,
-    Purple,
-    Red,
-    Yellow
+    /// <summary>
+    /// Represents the different colors that balloons can have in the game.
+    /// </summary>
+    public enum BalloonColorEnum
+    {
+        Blue,
+        Green,
+        Orange,
+        Pink,
+        Purple,
+        Red,
+        Yellow
+    }
 }

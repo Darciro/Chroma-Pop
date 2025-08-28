@@ -1,74 +1,164 @@
+using System.Collections.Generic;
+using ChromaPop.Core;
+using ChromaPop.Gameplay;
 using UnityEngine;
+using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
 
-public class BalloonSpawner : MonoBehaviour
+namespace ChromaPop.Gameplay
 {
-    public GameObject balloonPrefab;
-    public float spawnIntervalMin = 1f;
-    public float spawnIntervalMax = 3f;
-    private float nextSpawnInterval;
-    public float xMin = -2.5f;
-    public float xMax = 2.5f;
-    public float ySpawn = -5f;
-    public float yDestroy = 6f;
-
-    private float timer;
-    private readonly System.Collections.Generic.List<GameObject> spawnedBalloons = new System.Collections.Generic.List<GameObject>();
-
-    void Update()
+    /// <summary>
+    /// Handles the spawning and management of balloons in the game.
+    /// </summary>
+    public class BalloonSpawner : MonoBehaviour
     {
-        if (GameManager.Instance.gameStarted != true)
+        [Header("Spawning Settings")]
+        [SerializeField] private GameObject balloonPrefab;
+        [SerializeField] private float spawnIntervalMin = 1f;
+        [SerializeField] private float spawnIntervalMax = 3f;
+
+        [Header("Spawn Area")]
+        [SerializeField] private float xMin = -2.5f;
+        [SerializeField] private float xMax = 2.5f;
+        [SerializeField] private float ySpawn = -5f;
+        [SerializeField] private float yDestroy = 6f;
+
+        private float timer;
+        private float nextSpawnInterval;
+        private readonly List<GameObject> spawnedBalloons = new List<GameObject>();
+
+        private void Start()
         {
-            return;
+            SetRandomSpawnInterval();
         }
 
-        timer += Time.deltaTime;
-        if (timer >= nextSpawnInterval)
+        private void Update()
         {
-            SpawnBalloon();
+            if (!ShouldSpawnBalloons()) return;
+
+            UpdateSpawnTimer();
+            CleanupBalloons();
+        }
+
+        private bool ShouldSpawnBalloons()
+        {
+            return GameManager.Instance != null && GameManager.Instance.gameStarted;
+        }
+
+        private void UpdateSpawnTimer()
+        {
+            timer += Time.deltaTime;
+
+            if (timer >= nextSpawnInterval)
+            {
+                SpawnBalloon();
+                ResetSpawnTimer();
+            }
+        }
+
+        private void ResetSpawnTimer()
+        {
             timer = 0f;
+            SetRandomSpawnInterval();
+        }
+
+        private void SetRandomSpawnInterval()
+        {
             nextSpawnInterval = Random.Range(spawnIntervalMin, spawnIntervalMax);
         }
-        ValidateBalloons();
-    }
 
-    void Start()
-    {
-        nextSpawnInterval = Random.Range(spawnIntervalMin, spawnIntervalMax);
-    }
-
-    void SpawnBalloon()
-    {
-        float xPos = Random.Range(xMin, xMax);
-        Vector3 spawnPos = new Vector3(xPos, ySpawn, 0f);
-        GameObject balloon = Instantiate(balloonPrefab, spawnPos, Quaternion.identity);
-
-        // Assign a random color to the balloon
-        BalloonController balloonController = balloon.GetComponent<BalloonController>();
-        if (balloonController != null)
+        private void SpawnBalloon()
         {
-            // Get a random color from the enum
-            BalloonColorEnum randomColor = (BalloonColorEnum)Random.Range(0, System.Enum.GetValues(typeof(BalloonColorEnum)).Length);
+            if (balloonPrefab == null)
+            {
+                Debug.LogError("Balloon prefab is not assigned!", this);
+                return;
+            }
+
+            Vector3 spawnPosition = GetRandomSpawnPosition();
+            GameObject balloon = Instantiate(balloonPrefab, spawnPosition, Quaternion.identity);
+
+            ConfigureBalloon(balloon);
+            spawnedBalloons.Add(balloon);
+        }
+
+        private Vector3 GetRandomSpawnPosition()
+        {
+            float xPos = Random.Range(xMin, xMax);
+            return new Vector3(xPos, ySpawn, 0f);
+        }
+
+        private void ConfigureBalloon(GameObject balloon)
+        {
+            BalloonController balloonController = balloon.GetComponent<BalloonController>();
+
+            if (balloonController == null)
+            {
+                Debug.LogError("Balloon prefab doesn't have a BalloonController component!", this);
+                return;
+            }
+
+            BalloonColorEnum randomColor = GetRandomBalloonColor();
             balloonController.SetBalloonColor(randomColor);
         }
 
-        spawnedBalloons.Add(balloon);
-    }
-
-    void ValidateBalloons()
-    {
-        for (int i = spawnedBalloons.Count - 1; i >= 0; i--)
+        private BalloonColorEnum GetRandomBalloonColor()
         {
-            GameObject balloon = spawnedBalloons[i];
-            if (balloon == null)
+            var colorValues = System.Enum.GetValues(typeof(BalloonColorEnum));
+            return (BalloonColorEnum)colorValues.GetValue(Random.Range(0, colorValues.Length));
+        }
+
+        private void CleanupBalloons()
+        {
+            for (int i = spawnedBalloons.Count - 1; i >= 0; i--)
             {
-                spawnedBalloons.RemoveAt(i);
-                continue;
+                GameObject balloon = spawnedBalloons[i];
+
+                if (ShouldRemoveBalloon(balloon, i))
+                {
+                    RemoveBalloonFromList(i);
+                }
             }
+        }
+
+        private bool ShouldRemoveBalloon(GameObject balloon, int index)
+        {
+            if (balloon == null) return true;
+
             if (balloon.transform.position.y > yDestroy)
             {
                 Destroy(balloon);
-                spawnedBalloons.RemoveAt(i);
+                return true;
             }
+
+            return false;
+        }
+
+        private void RemoveBalloonFromList(int index)
+        {
+            spawnedBalloons.RemoveAt(index);
+        }
+
+        public void StopSpawning()
+        {
+            enabled = false;
+        }
+
+        public void StartSpawning()
+        {
+            enabled = true;
+            ResetSpawnTimer();
+        }
+
+        public void ClearAllBalloons()
+        {
+            foreach (GameObject balloon in spawnedBalloons)
+            {
+                if (balloon != null)
+                {
+                    Destroy(balloon);
+                }
+            }
+            spawnedBalloons.Clear();
         }
     }
 }

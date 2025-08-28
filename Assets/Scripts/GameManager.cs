@@ -1,270 +1,414 @@
 using System.Collections.Generic;
+using ChromaPop.Core;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
 
-public class GameManager : MonoBehaviour
+namespace ChromaPop.Gameplay
 {
-    public static GameManager Instance { get; private set; }
-
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI healthText;
-    public int startingHealth = 3;
-    public RectTransform sequenceContainerGrid;
-    public GameObject colorTargetPrefab;
-    public GameObject gameOverScreen;
-    public bool gameStarted = false;
-
-    private int score = 0;
-    private int health = 0;
-    private int sequences = 3;
-    private int currentSequenceIndex = 0;
-
-    private readonly List<GameObject> sequenceList = new List<GameObject>();
-    private readonly List<BalloonColorEnum> colorSequenceList = new List<BalloonColorEnum>();
-
-    void Awake()
+    /// <summary>
+    /// Main game manager that handles game state, scoring, and sequence management.
+    /// </summary>
+    public class GameManager : MonoBehaviour
     {
-        if (Instance != null)
+        public static GameManager Instance { get; private set; }
+
+        [Header("UI References")]
+        [SerializeField] private TextMeshProUGUI scoreText;
+        [SerializeField] private TextMeshProUGUI healthText;
+        [SerializeField] private TextMeshProUGUI finalScoreText;
+        [SerializeField] private GameObject gameOverScreen;
+
+        [Header("Sequence UI")]
+        [SerializeField] private RectTransform sequenceContainerGrid;
+        [SerializeField] private GameObject colorTargetPrefab;
+
+        [Header("Game Settings")]
+        [SerializeField] private int startingHealth = 3;
+        [SerializeField] private int sequenceLength = 3;
+        [SerializeField] private int sequenceCompletionBonus = 10;
+
+        // Game State
+        private GameState gameState;
+        private ScoreManager scoreManager;
+        private HealthManager healthManager;
+        private SequenceManager sequenceManager;
+
+        public bool gameStarted { get; private set; } = false;
+
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
+            InitializeSingleton();
+            InitializeManagers();
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    void Start()
-    {
-        StartGame();
-    }
-
-    public void StartGame()
-    {
-        health = startingHealth;
-        gameOverScreen.SetActive(false);
-        gameStarted = true;
-        InitializeSequence();
-        UpdateScoreUI();
-        UpdateHealthUI();
-    }
-
-    public void ValidateScore(BalloonColorEnum color)
-    {
-        // Check if the popped balloon color matches the expected color in sequence
-        if (colorSequenceList[currentSequenceIndex] == color)
+        private void Start()
         {
-            // Mark the current sequence item as checked (visual feedback)
-            MarkSequenceItemAsChecked(currentSequenceIndex);
+            StartGame();
+        }
 
-            // Move to next item in sequence
-            currentSequenceIndex++;
+        private void InitializeSingleton()
+        {
+            if (Instance != null)
+            {
+                Destroy(gameObject);
+                return;
+            }
 
-            // Add score for correct sequence
-            AddScore(1);
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
 
-            // Check if sequence is complete
-            if (currentSequenceIndex >= colorSequenceList.Count)
+        private void InitializeManagers()
+        {
+            gameState = new GameState();
+            scoreManager = new ScoreManager(scoreText);
+            healthManager = new HealthManager(healthText, startingHealth);
+            sequenceManager = new SequenceManager(sequenceContainerGrid, colorTargetPrefab, sequenceLength);
+        }
+
+        public void StartGame()
+        {
+            ResetGameState();
+            gameOverScreen?.SetActive(false);
+            gameStarted = true;
+
+            sequenceManager.GenerateNewSequence();
+            UpdateUI();
+        }
+
+        private void ResetGameState()
+        {
+            gameState.Reset();
+            scoreManager.ResetScore();
+            healthManager.ResetHealth(startingHealth);
+            sequenceManager.ClearSequence();
+        }
+
+        public void ValidateScore(BalloonColorEnum color)
+        {
+            if (sequenceManager.ValidateNextColor(color))
+            {
+                OnCorrectSequence();
+            }
+            else
+            {
+                OnIncorrectSequence();
+            }
+        }
+
+        private void OnCorrectSequence()
+        {
+            scoreManager.AddScore(1);
+
+            if (sequenceManager.IsSequenceComplete())
             {
                 OnSequenceCompleted();
             }
         }
-        else
-        {
-            // Player loses health for incorrect sequence
-            ChangeHealth(-1);
 
-            // Check if player has no health left
-            if (GetHealth() <= 0)
+        private void OnIncorrectSequence()
+        {
+            healthManager.ChangeHealth(-1);
+
+            if (healthManager.GetHealth() <= 0)
             {
                 OnGameOver();
             }
         }
-    }
 
-    public void AddScore(int amount)
-    {
-        score += amount;
-        UpdateScoreUI();
-    }
-
-    public void SetScore(int value)
-    {
-        score = value;
-        UpdateScoreUI();
-    }
-
-    public int GetScore() => score;
-
-    public void ChangeHealth(int delta)
-    {
-        health += delta;
-        if (health < 0) health = 0;
-        UpdateHealthUI();
-    }
-
-    public void SetHealth(int value)
-    {
-        health = value;
-        UpdateHealthUI();
-    }
-
-    public int GetHealth() => health;
-
-    private void UpdateScoreUI()
-    {
-        if (scoreText != null)
+        private void OnSequenceCompleted()
         {
-            scoreText.text = score.ToString();
+            scoreManager.AddScore(sequenceCompletionBonus);
+            sequenceManager.GenerateNewSequence();
+        }
+
+        private void OnGameOver()
+        {
+            finalScoreText.text = GetScore().ToString();
+            gameStarted = false;
+            gameOverScreen?.SetActive(true);
+            ResetGameState();
+        }
+
+        private void UpdateUI()
+        {
+            scoreManager.UpdateUI();
+            healthManager.UpdateUI();
+        }
+
+        // Public API for external access
+        public void AddScore(int amount) => scoreManager.AddScore(amount);
+        public void SetScore(int value) => scoreManager.SetScore(value);
+        public int GetScore() => scoreManager.GetScore();
+        public void ChangeHealth(int delta) => healthManager.ChangeHealth(delta);
+        public void SetHealth(int value) => healthManager.SetHealth(value);
+        public int GetHealth() => healthManager.GetHealth();
+    }
+
+    /// <summary>
+    /// Manages the game's overall state.
+    /// </summary>
+    [System.Serializable]
+    public class GameState
+    {
+        public bool isGameActive;
+        public float gameTime;
+
+        public void Reset()
+        {
+            isGameActive = false;
+            gameTime = 0f;
         }
     }
 
-    private void UpdateHealthUI()
+    /// <summary>
+    /// Handles all score-related functionality.
+    /// </summary>
+    [System.Serializable]
+    public class ScoreManager
     {
-        if (healthText != null)
-            healthText.text = health.ToString();
+        private int score = 0;
+        private TextMeshProUGUI scoreText;
+
+        public ScoreManager(TextMeshProUGUI scoreText)
+        {
+            this.scoreText = scoreText;
+        }
+
+        public void AddScore(int amount)
+        {
+            score += amount;
+            UpdateUI();
+        }
+
+        public void SetScore(int value)
+        {
+            score = value;
+            UpdateUI();
+        }
+
+        public int GetScore() => score;
+
+        public void ResetScore()
+        {
+            score = 0;
+            UpdateUI();
+        }
+
+        public void UpdateUI()
+        {
+            if (scoreText != null)
+            {
+                scoreText.text = score.ToString();
+            }
+        }
     }
 
-    private void InitializeSequence()
+    /// <summary>
+    /// Handles all health-related functionality.
+    /// </summary>
+    [System.Serializable]
+    public class HealthManager
     {
-        ClearSequence();
-        currentSequenceIndex = 0; // Reset sequence validation progress
+        private int health = 0;
+        private TextMeshProUGUI healthText;
 
-        for (int i = 0; i < sequences; i++)
+        public HealthManager(TextMeshProUGUI healthText, int startingHealth)
         {
-            GameObject colorTargetInstance = Instantiate(colorTargetPrefab, sequenceContainerGrid);
-            sequenceList.Add(colorTargetInstance);
+            this.healthText = healthText;
+            this.health = startingHealth;
+        }
 
-            // Pick a random value from the BalloonColorEnum enum
-            BalloonColorEnum randomBalloonColor = (BalloonColorEnum)Random.Range(0, System.Enum.GetValues(typeof(BalloonColorEnum)).Length);
-            colorSequenceList.Add(randomBalloonColor);
+        public void ChangeHealth(int delta)
+        {
+            health = Mathf.Max(0, health + delta);
+            UpdateUI();
+        }
 
-            // Use the helper method to get the color
-            Color targetColor = GetColorFromEnum(randomBalloonColor);
+        public void SetHealth(int value)
+        {
+            health = Mathf.Max(0, value);
+            UpdateUI();
+        }
 
-            var childImage = colorTargetInstance.transform.Find("Image")?.GetComponent<Image>();
+        public int GetHealth() => health;
+
+        public void ResetHealth(int startingHealth)
+        {
+            health = startingHealth;
+            UpdateUI();
+        }
+
+        public void UpdateUI()
+        {
+            if (healthText != null)
+            {
+                healthText.text = health.ToString();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles color sequence generation and validation.
+    /// </summary>
+    [System.Serializable]
+    public class SequenceManager
+    {
+        private readonly RectTransform sequenceContainer;
+        private readonly GameObject colorTargetPrefab;
+        private readonly int sequenceLength;
+
+        private readonly List<GameObject> sequenceObjects = new List<GameObject>();
+        private readonly List<BalloonColorEnum> colorSequence = new List<BalloonColorEnum>();
+        private int currentSequenceIndex = 0;
+
+        public SequenceManager(RectTransform container, GameObject prefab, int length)
+        {
+            sequenceContainer = container;
+            colorTargetPrefab = prefab;
+            sequenceLength = length;
+        }
+
+        public void GenerateNewSequence()
+        {
+            ClearSequence();
+            CreateSequenceObjects();
+            ResetProgress();
+        }
+
+        private void CreateSequenceObjects()
+        {
+            for (int i = 0; i < sequenceLength; i++)
+            {
+                CreateSequenceItem();
+            }
+        }
+
+        private void CreateSequenceItem()
+        {
+            if (colorTargetPrefab == null || sequenceContainer == null)
+            {
+                Debug.LogError("Sequence UI components not properly configured!");
+                return;
+            }
+
+            GameObject sequenceItem = Object.Instantiate(colorTargetPrefab, sequenceContainer);
+            sequenceObjects.Add(sequenceItem);
+
+            BalloonColorEnum randomColor = GetRandomColor();
+            colorSequence.Add(randomColor);
+
+            SetSequenceItemColor(sequenceItem, randomColor);
+        }
+
+        private BalloonColorEnum GetRandomColor()
+        {
+            var colorValues = System.Enum.GetValues(typeof(BalloonColorEnum));
+            return (BalloonColorEnum)colorValues.GetValue(Random.Range(0, colorValues.Length));
+        }
+
+        private void SetSequenceItemColor(GameObject item, BalloonColorEnum color)
+        {
+            Color targetColor = ColorUtility.GetColorFromEnum(color);
+
+            var childImage = item.transform.Find("Image")?.GetComponent<Image>();
             if (childImage != null)
             {
                 childImage.color = targetColor;
             }
         }
-    }
 
-    public void ClearSequence()
-    {
-        foreach (Transform child in sequenceContainerGrid)
+        public bool ValidateNextColor(BalloonColorEnum color)
         {
-            Destroy(child.gameObject);
+            if (currentSequenceIndex >= colorSequence.Count)
+                return false;
+
+            bool isCorrect = colorSequence[currentSequenceIndex] == color;
+
+            if (isCorrect)
+            {
+                MarkSequenceItemAsCompleted(currentSequenceIndex);
+                currentSequenceIndex++;
+            }
+
+            return isCorrect;
         }
 
-        for (int i = 0; i < sequenceList.Count; i++)
+        private void MarkSequenceItemAsCompleted(int index)
         {
-            if (sequenceList[i] != null)
-                Destroy(sequenceList[i]);
-        }
-        sequenceList.Clear();
-        colorSequenceList.Clear();
-        currentSequenceIndex = 0; // Reset sequence progress when clearing
-    }
+            if (index < 0 || index >= sequenceObjects.Count || sequenceObjects[index] == null)
+                return;
 
-    private void MarkSequenceItemAsChecked(int index)
-    {
-        if (index >= 0 && index < sequenceList.Count && sequenceList[index] != null)
-        {
-            // Find the child Image component and hide it, show checked state
-            var childImage = sequenceList[index].transform.Find("Image")?.GetComponent<Image>();
+            GameObject item = sequenceObjects[index];
+
+            // Hide the color image
+            var childImage = item.transform.Find("Image");
             if (childImage != null)
             {
                 childImage.gameObject.SetActive(false);
-                sequenceList[index].transform.Find("Checked")?.gameObject.SetActive(true);
             }
-            else
-            {
-                // Try parent Image as fallback
-                var parentImage = sequenceList[index].GetComponent<Image>();
-                if (parentImage != null)
-                {
-                    // Disable all child elements first
-                    foreach (Transform child in parentImage.transform)
-                    {
-                        child.gameObject.SetActive(false);
-                    }
 
-                    // Find and enable the "Checked" child element
-                    Transform checkedChild = parentImage.transform.Find("Checked");
-                    if (checkedChild != null)
-                    {
-                        checkedChild.gameObject.SetActive(true);
-                    }
+            // Show the checked indicator
+            var checkedIndicator = item.transform.Find("Checked");
+            if (checkedIndicator != null)
+            {
+                checkedIndicator.gameObject.SetActive(true);
+            }
+        }
+
+        public bool IsSequenceComplete()
+        {
+            return currentSequenceIndex >= colorSequence.Count;
+        }
+
+        public void ClearSequence()
+        {
+
+            // Clear any existing UI objects from the container
+            for (int i = sequenceContainer.childCount - 1; i >= 0; i--)
+            {
+                Object.Destroy(sequenceContainer.GetChild(i).gameObject);
+            }
+
+            foreach (GameObject obj in sequenceObjects)
+            {
+                if (obj != null)
+                {
+                    Object.Destroy(obj);
                 }
             }
+
+            sequenceObjects.Clear();
+            colorSequence.Clear();
+            currentSequenceIndex = 0;
+        }
+
+        private void ResetProgress()
+        {
+            currentSequenceIndex = 0;
         }
     }
 
-    private void ResetSequenceProgress()
+    /// <summary>
+    /// Utility class for color conversions.
+    /// </summary>
+    public static class ColorUtility
     {
-        currentSequenceIndex = 0;
-
-        // Reset all sequence items to their original colors
-        for (int i = 0; i < sequenceList.Count; i++)
+        public static Color GetColorFromEnum(BalloonColorEnum balloonColor)
         {
-            if (sequenceList[i] != null && i < colorSequenceList.Count)
+            return balloonColor switch
             {
-                var childImage = sequenceList[i].transform.Find("Image")?.GetComponent<Image>();
-                if (childImage != null)
-                {
-                    // Restore original color based on the sequence
-                    Color originalColor = GetColorFromEnum(colorSequenceList[i]);
-                    childImage.color = originalColor;
-                }
-            }
+                BalloonColorEnum.Blue => Color.blue,
+                BalloonColorEnum.Green => Color.green,
+                BalloonColorEnum.Orange => new Color(1f, 0.5f, 0f),
+                BalloonColorEnum.Pink => new Color(1f, 0.75f, 0.8f),
+                BalloonColorEnum.Purple => new Color(0.5f, 0f, 0.5f),
+                BalloonColorEnum.Red => Color.red,
+                BalloonColorEnum.Yellow => Color.yellow,
+                _ => Color.white
+            };
         }
-    }
-
-    private Color GetColorFromEnum(BalloonColorEnum balloonColor)
-    {
-        switch (balloonColor)
-        {
-            case BalloonColorEnum.Blue:
-                return Color.blue;
-            case BalloonColorEnum.Green:
-                return Color.green;
-            case BalloonColorEnum.Orange:
-                return new Color(1f, 0.5f, 0f); // Orange
-            case BalloonColorEnum.Pink:
-                return new Color(1f, 0.75f, 0.8f); // Pink
-            case BalloonColorEnum.Purple:
-                return new Color(0.5f, 0f, 0.5f); // Purple
-            case BalloonColorEnum.Red:
-                return Color.red;
-            case BalloonColorEnum.Yellow:
-                return Color.yellow;
-            default:
-                return Color.white;
-        }
-    }
-
-    private void OnSequenceCompleted()
-    {
-        // Add bonus score for completing sequence
-        AddScore(50);
-
-        // Generate a new sequence
-        InitializeSequence();
-    }
-
-    private void OnGameOver()
-    {
-        gameStarted = false;
-        // Show game over UI
-        if (gameOverScreen != null)
-        {
-            gameOverScreen.SetActive(true);
-        }
-
-        // Reset game state
-        SetScore(0);
-        SetHealth(0);
     }
 }
