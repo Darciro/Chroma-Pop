@@ -1,10 +1,10 @@
+using System.Collections;
 using System.Collections.Generic;
-using ChromaPop.Core;
-using ChromaPop.Gameplay;
+using ChromaPop;
 using UnityEngine;
-using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
+using BalloonColorEnum = ChromaPop.BalloonColorEnum;
 
-namespace ChromaPop.Gameplay
+namespace ChromaPop
 {
     /// <summary>
     /// Handles the spawning and management of balloons in the game.
@@ -15,6 +15,7 @@ namespace ChromaPop.Gameplay
         [SerializeField] private GameObject balloonPrefab;
         [SerializeField] private float spawnIntervalMin = 1f;
         [SerializeField] private float spawnIntervalMax = 3f;
+        [SerializeField] private float initialDelayBeforeFirstSpawn = 1f;
 
         [Header("Spawn Area")]
         [SerializeField] private float xMin = -2.5f;
@@ -22,48 +23,46 @@ namespace ChromaPop.Gameplay
         [SerializeField] private float ySpawn = -5f;
         [SerializeField] private float yDestroy = 6f;
 
-        private float timer;
-        private float nextSpawnInterval;
         private readonly List<GameObject> spawnedBalloons = new List<GameObject>();
+        private Coroutine spawningCoroutine;
 
         private void Start()
         {
-            SetRandomSpawnInterval();
+            spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
+        }
+
+        private IEnumerator WaitAndStartSpawning()
+        {
+            // Wait until the game allows spawning
+            yield return new WaitUntil(() => ShouldSpawnBalloons());
+
+            // Wait for the initial delay
+            yield return new WaitForSeconds(initialDelayBeforeFirstSpawn);
+
+            // Start the spawning loop
+            while (true)
+            {
+                // Wait for the next spawn interval
+                float spawnInterval = Random.Range(spawnIntervalMin, spawnIntervalMax);
+                yield return new WaitForSeconds(spawnInterval);
+
+                // Check if we should still spawn balloons
+                if (ShouldSpawnBalloons())
+                {
+                    SpawnBalloon();
+                }
+            }
         }
 
         private void Update()
         {
-            if (!ShouldSpawnBalloons()) return;
-
-            UpdateSpawnTimer();
+            // Only cleanup balloons in Update
             CleanupBalloons();
         }
 
         private bool ShouldSpawnBalloons()
         {
             return GameManager.Instance != null && GameManager.Instance.gameStarted;
-        }
-
-        private void UpdateSpawnTimer()
-        {
-            timer += Time.deltaTime;
-
-            if (timer >= nextSpawnInterval)
-            {
-                SpawnBalloon();
-                ResetSpawnTimer();
-            }
-        }
-
-        private void ResetSpawnTimer()
-        {
-            timer = 0f;
-            SetRandomSpawnInterval();
-        }
-
-        private void SetRandomSpawnInterval()
-        {
-            nextSpawnInterval = Random.Range(spawnIntervalMin, spawnIntervalMax);
         }
 
         private void SpawnBalloon()
@@ -97,8 +96,12 @@ namespace ChromaPop.Gameplay
                 return;
             }
 
+            // Set random color
             BalloonColorEnum randomColor = GetRandomBalloonColor();
             balloonController.SetBalloonColor(randomColor);
+
+            // Set random speed within the balloon's configured range
+            balloonController.SetRandomFloatSpeed();
         }
 
         private BalloonColorEnum GetRandomBalloonColor()
@@ -140,13 +143,17 @@ namespace ChromaPop.Gameplay
 
         public void StopSpawning()
         {
-            enabled = false;
+            if (spawningCoroutine != null)
+            {
+                StopCoroutine(spawningCoroutine);
+                spawningCoroutine = null;
+            }
         }
 
         public void StartSpawning()
         {
-            enabled = true;
-            ResetSpawnTimer();
+            StopSpawning(); // Stop any existing coroutine first
+            spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
         }
 
         public void ClearAllBalloons()

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using ChromaPop.Core;
+using ChromaPop;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
+using BalloonColorEnum = ChromaPop.BalloonColorEnum;
 
-namespace ChromaPop.Gameplay
+namespace ChromaPop
 {
     /// <summary>
     /// Main game manager that handles game state, scoring, and sequence management.
@@ -71,7 +71,6 @@ namespace ChromaPop.Gameplay
         public void StartGame()
         {
             ResetGameState();
-            gameOverScreen?.SetActive(false);
             gameStarted = true;
 
             sequenceManager.GenerateNewSequence();
@@ -80,6 +79,7 @@ namespace ChromaPop.Gameplay
 
         private void ResetGameState()
         {
+            GameTween.Instance.GameOverTransitions();
             gameState.Reset();
             scoreManager.ResetScore();
             healthManager.ResetHealth(startingHealth);
@@ -128,7 +128,7 @@ namespace ChromaPop.Gameplay
         {
             finalScoreText.text = GetScore().ToString();
             gameStarted = false;
-            gameOverScreen?.SetActive(true);
+            GameTween.Instance.InitGameOverTransitions();
             ResetGameState();
         }
 
@@ -301,6 +301,7 @@ namespace ChromaPop.Gameplay
             colorSequence.Add(randomColor);
 
             SetSequenceItemColor(sequenceItem, randomColor);
+            GameTween.Instance.InitSequenceTransitions();
         }
 
         private BalloonColorEnum GetRandomColor()
@@ -400,13 +401,13 @@ namespace ChromaPop.Gameplay
         {
             return balloonColor switch
             {
-                BalloonColorEnum.Blue => Color.blue,
-                BalloonColorEnum.Green => Color.green,
+                BalloonColorEnum.Blue => new Color(.3f, 0.8f, 1f),
+                BalloonColorEnum.Green => new Color(.68f, 0.85f, 0),
                 BalloonColorEnum.Orange => new Color(1f, 0.5f, 0f),
                 BalloonColorEnum.Pink => new Color(1f, 0.75f, 0.8f),
                 BalloonColorEnum.Purple => new Color(0.5f, 0f, 0.5f),
-                BalloonColorEnum.Red => Color.red,
-                BalloonColorEnum.Yellow => Color.yellow,
+                BalloonColorEnum.Red => new Color(0.83f, 0, 0),
+                BalloonColorEnum.Yellow => new Color(1f, .83f, .16f),
                 _ => Color.white
             };
         }

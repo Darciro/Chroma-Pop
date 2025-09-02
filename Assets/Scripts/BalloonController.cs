@@ -1,9 +1,9 @@
 using System.Collections;
-using ChromaPop.Core;
+using ChromaPop;
 using UnityEngine;
-using BalloonColorEnum = ChromaPop.Core.BalloonColorEnum;
+using BalloonColorEnum = ChromaPop.BalloonColorEnum;
 
-namespace ChromaPop.Gameplay
+namespace ChromaPop
 {
     [System.Serializable]
     public class BalloonColorData
@@ -24,6 +24,8 @@ namespace ChromaPop.Gameplay
     {
         [Header("Movement Settings")]
         [SerializeField] private float floatSpeed = 3f;
+        [SerializeField] private float minFloatSpeed = 1f;
+        [SerializeField] private float maxFloatSpeed = 5f;
 
         [Header("Color Configuration")]
         [SerializeField] private BalloonColorData[] balloonColorData;
@@ -78,6 +80,23 @@ namespace ChromaPop.Gameplay
 
             currentBalloonColorData = colorData;
             ApplyBalloonSprite(colorData);
+        }
+
+        /// <summary>
+        /// Sets the balloon's float speed to a random value within the configured range.
+        /// </summary>
+        public void SetRandomFloatSpeed()
+        {
+            floatSpeed = Random.Range(minFloatSpeed, maxFloatSpeed);
+        }
+
+        /// <summary>
+        /// Sets the balloon's float speed to a specific value.
+        /// </summary>
+        /// <param name="speed">The speed value to set</param>
+        public void SetFloatSpeed(float speed)
+        {
+            floatSpeed = Mathf.Max(0f, speed); // Ensure speed is not negative
         }
 
         private void ApplyBalloonSprite(BalloonColorData colorData)
@@ -140,6 +159,12 @@ namespace ChromaPop.Gameplay
 
         private void PlayPopAnimation()
         {
+            // Trigger camera shake effect
+            if (GameTween.Instance != null)
+            {
+                GameTween.Instance.ShakeCamera();
+            }
+
             if (HasCustomPopAnimation())
             {
                 StartCoroutine(PlaySpriteAnimation(currentBalloonColorData.PopAnimationSprites));

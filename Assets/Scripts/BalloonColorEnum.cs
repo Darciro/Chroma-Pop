@@ -1,4 +1,4 @@
-namespace ChromaPop.Core
+namespace ChromaPop
 {
     /// <summary>
     /// Represents the different colors that balloons can have in the game.

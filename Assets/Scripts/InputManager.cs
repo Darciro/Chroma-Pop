@@ -1,8 +1,8 @@
-using ChromaPop.Gameplay;
+using ChromaPop;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace ChromaPop.Input
+namespace ChromaPop
 {
     /// <summary>
     /// Handles player input for balloon interaction using the new Input System.
@@ -69,10 +69,6 @@ namespace ChromaPop.Input
 
             clickAction.performed += OnClickPerformed;
             touchAction.performed += OnTouchPerformed;
-
-            // Debug logging
-            Debug.Log($"Input setup complete - Touch available: {Touchscreen.current != null}, " +
-                     $"Mouse available: {Mouse.current != null}");
         }
 
         private void OnClickPerformed(InputAction.CallbackContext context)
@@ -85,13 +81,10 @@ namespace ChromaPop.Input
 
         private void OnTouchPerformed(InputAction.CallbackContext context)
         {
-            Debug.Log("Touch input detected!");
-
             if (!CanProcessTouchInput()) return;
 
             // Get touch position from the primary touch
             Vector2 screenPosition = Touchscreen.current.primaryTouch.position.ReadValue();
-            Debug.Log($"Touch position: {screenPosition}");
             ProcessClickAt(screenPosition);
         }
 
@@ -104,20 +97,10 @@ namespace ChromaPop.Input
 
         private bool CanProcessTouchInput()
         {
-            bool canProcess = mainCamera != null &&
+            return mainCamera != null &&
                    Touchscreen.current != null &&
                    Touchscreen.current.primaryTouch.press.isPressed &&
                    GameManager.Instance != null;
-
-            // Debug logging for touch input issues
-            if (!canProcess && Touchscreen.current != null)
-            {
-                Debug.Log($"Touch input blocked - Camera: {mainCamera != null}, " +
-                         $"Touch pressed: {Touchscreen.current.primaryTouch.press.isPressed}, " +
-                         $"GameManager: {GameManager.Instance != null}");
-            }
-
-            return canProcess;
         }
 
         private void ProcessClickAt(Vector2 screenPosition)

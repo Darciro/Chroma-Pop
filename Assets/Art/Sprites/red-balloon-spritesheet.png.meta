@@ -1,0 +1,385 @@
+fileFormatVersion: 2
+guid: da7390d25f7012144982cd08618effc7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7230304705262697746
+    second: red-balloon-spritesheet_0
+  - first:
+      213: -5614180308956676613
+    second: red-balloon-spritesheet_1
+  - first:
+      213: 2130578209350987416
+    second: red-balloon-spritesheet_2
+  - first:
+      213: -5566491678823996274
+    second: red-balloon-spritesheet_3
+  - first:
+      213: -8408456256157142944
+    second: red-balloon-spritesheet_4
+  - first:
+      213: 2359616060350756121
+    second: red-balloon-spritesheet_5
+  - first:
+      213: -8431924058489588032
+    second: red-balloon-spritesheet_6
+  - first:
+      213: -6003986650665629967
+    second: red-balloon-spritesheet_7
+  - first:
+      213: -5294705427612323716
+    second: red-balloon-spritesheet_8
+  - first:
+      213: 1448401934625175625
+    second: red-balloon-spritesheet_9
+  - first:
+      213: -17213747086312852
+    second: red-balloon-spritesheet_10
+  - first:
+      213: -5069449598046797555
+    second: red-balloon-spritesheet_11
+  - first:
+      213: 8505706473545833838
+    second: red-balloon-spritesheet_12
+  - first:
+      213: -8546426944541434553
+    second: red-balloon-spritesheet_13
+  - first:
+      213: -5589219871377699314
+    second: red-balloon-spritesheet_14
+  - first:
+      213: 2454161098245037886
+    second: red-balloon-spritesheet_15
+  - first:
+      213: 7465824577671838127
+    second: red-balloon-spritesheet_16
+  - first:
+      213: 8175611739332110453
+    second: red-balloon-spritesheet_17
+  - first:
+      213: -3797329535679339124
+    second: red-balloon-spritesheet_18
+  - first:
+      213: 461226899947791265
+    second: red-balloon-spritesheet_19
+  - first:
+      213: -1338281400393699427
+    second: red-balloon-spritesheet_20
+  - first:
+      213: -8184373964653399669
+    second: red-balloon-spritesheet_21
+  - first:
+      213: -4607146273550685420
+    second: red-balloon-spritesheet_22
+  - first:
+      213: -6338807111748978732
+    second: red-balloon-spritesheet_23
+  - first:
+      213: -6429207762628484704
+    second: red-balloon-spritesheet_24
+  - first:
+      213: 8361197807377003296
+    second: red-balloon-spritesheet_25
+  - first:
+      213: 7292881776023016797
+    second: red-balloon-spritesheet_26
+  - first:
+      213: -4782198795298341563
+    second: red-balloon-spritesheet_27
+  - first:
+      213: -8335746728617516828
+    second: red-balloon-spritesheet_28
+  - first:
+      213: -4895569502062805478
+    second: red-balloon-spritesheet_29
+  - first:
+      213: 9076058987745074060
+    second: red-balloon-spritesheet_30
+  - first:
+      213: 3001387665438785048
+    second: red-balloon-spritesheet_31
+  - first:
+      213: -4282995281130604537
+    second: red-balloon-spritesheet_32
+  - first:
+      213: -4906130568507010686
+    second: red-balloon-spritesheet_33
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 256
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21db40752d3375460800000000000000
+      internalID: 7230304705262697746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfdf4a311cc6612b0800000000000000
+      internalID: -5614180308956676613
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 89ead86d795519d10800000000000000
+      internalID: 2130578209350987416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8427868f49dfb2b0800000000000000
+      internalID: -5566491678823996274
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 060b75eb5992f4b80800000000000000
+      internalID: -8408456256157142944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: red-balloon-spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 0
+        width: 512
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 915738b1e4a0fb020800000000000000
+      internalID: 2359616060350756121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: db236348cbc271e45852fd0470368d4a
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":512.0,"y":512.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      red-balloon-spritesheet_0: 7230304705262697746
+      red-balloon-spritesheet_1: -5614180308956676613
+      red-balloon-spritesheet_2: 2130578209350987416
+      red-balloon-spritesheet_3: -5566491678823996274
+      red-balloon-spritesheet_4: -8408456256157142944
+      red-balloon-spritesheet_5: 2359616060350756121
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
