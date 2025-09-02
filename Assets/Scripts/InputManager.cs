@@ -1,173 +1,167 @@
-using ChromaPop;
 using UnityEngine;
+using UnityEngine.EventSystems; // for UI blocking
 using UnityEngine.InputSystem;
 
 namespace ChromaPop
 {
     /// <summary>
-    /// Handles player input for balloon interaction using the new Input System.
-    /// Supports both mouse clicks (for editor/desktop) and touch input (for mobile).
+    /// Unified pointer input (mouse + touch) using the new Input System.
+    /// - Single InputAction map for press + position (covers editor, desktop, and mobile).
+    /// - Ignores presses over UI.
+    /// - Works with both orthographic and perspective 2D cameras.
     /// </summary>
     public class InputManager : MonoBehaviour
     {
         [Header("Input Settings")]
-        [SerializeField] private LayerMask balloonLayerMask = -1;
+        [Tooltip("Which layers contain balloons that can be popped.")]
+        [SerializeField] private LayerMask balloonLayerMask = ~0;
+
+        [Header("Behaviour")]
+        [Tooltip("If true, input is ignored when the game is paused (Time.timeScale == 0).")]
+        [SerializeField] private bool ignoreWhenPaused = true;
 
         private Camera mainCamera;
-        private InputAction clickAction;
-        private InputAction touchAction;
+
+        // One map with two actions: press and position
+        private InputAction pressAction;
+        private InputAction positionAction;
 
         private void Awake()
         {
-            InitializeComponents();
+            mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                Debug.LogError("No main camera found! Input detection will not work.", this);
+                enabled = false;
+                return;
+            }
+
             SetupInputActions();
         }
 
         private void OnEnable()
         {
-            clickAction?.Enable();
-            touchAction?.Enable();
+            pressAction?.Enable();
+            positionAction?.Enable();
+            if (pressAction != null) pressAction.performed += OnPressPerformed;
         }
 
         private void OnDisable()
         {
-            clickAction?.Disable();
-            touchAction?.Disable();
+            if (pressAction != null) pressAction.performed -= OnPressPerformed;
+            pressAction?.Disable();
+            positionAction?.Disable();
         }
 
         private void OnDestroy()
         {
-            clickAction?.Dispose();
-            touchAction?.Dispose();
-        }
-
-        private void InitializeComponents()
-        {
-            mainCamera = Camera.main;
-
-            if (mainCamera == null)
-            {
-                Debug.LogError("No main camera found! Input detection will not work.", this);
-            }
+            pressAction?.Dispose();
+            positionAction?.Dispose();
         }
 
         private void SetupInputActions()
         {
-            // Mouse input for desktop/editor
-            clickAction = new InputAction(
-                name: "Click",
+            // Use the abstract <Pointer> device so the same binding covers mouse *and* touch.
+            // Press interaction set to fire on "press" (you can switch to release by using Press(behavior=1))
+            pressAction = new InputAction(
+                name: "PointerPress",
                 type: InputActionType.Button,
-                binding: "<Mouse>/leftButton"
+                binding: "*/press", // matches <Pointer>/press, works for Mouse and Touch primary
+                interactions: "press" // change to "press(behavior=1)" if you want on-release instead
             );
 
-            // Touch input for mobile - using press instead of tap
-            touchAction = new InputAction(
-                name: "Touch",
-                type: InputActionType.Button,
-                binding: "<Touchscreen>/primaryTouch/press"
+            positionAction = new InputAction(
+                name: "PointerPosition",
+                type: InputActionType.Value,
+                binding: "*/position" // matches <Pointer>/position (mouse or primary touch)
             );
-
-            clickAction.performed += OnClickPerformed;
-            touchAction.performed += OnTouchPerformed;
         }
 
-        private void OnClickPerformed(InputAction.CallbackContext context)
+        private void OnPressPerformed(InputAction.CallbackContext ctx)
         {
-            if (!CanProcessInput()) return;
+            if (!CanProcessNow()) return;
 
-            Vector2 screenPosition = Mouse.current.position.ReadValue();
-            ProcessClickAt(screenPosition);
+            // If pointer is over UI, ignore (prevents popping through buttons, etc.)
+            if (IsPointerOverUI()) return;
+
+            // Read the pointer position (mouse or primary touch)
+            Vector2 screenPos = positionAction.ReadValue<Vector2>();
+            ProcessPointerAt(screenPos);
         }
 
-        private void OnTouchPerformed(InputAction.CallbackContext context)
+        private bool CanProcessNow()
         {
-            if (!CanProcessTouchInput()) return;
-
-            // Get touch position from the primary touch
-            Vector2 screenPosition = Touchscreen.current.primaryTouch.position.ReadValue();
-            ProcessClickAt(screenPosition);
+            if (mainCamera == null) return false;
+            if (ignoreWhenPaused && Time.timeScale == 0f) return false;
+            if (GameManager.Instance == null) return false;
+            return true;
         }
 
-        private bool CanProcessInput()
+        private bool IsPointerOverUI()
         {
-            return mainCamera != null &&
-                   Mouse.current != null &&
-                   GameManager.Instance != null;
-        }
+            // Works for mouse and touch (primary). For multi-touch UI checks,
+            // you could pass a fingerId-specific PointerEventData if needed.
+            if (EventSystem.current == null) return false;
 
-        private bool CanProcessTouchInput()
-        {
-            return mainCamera != null &&
-                   Touchscreen.current != null &&
-                   Touchscreen.current.primaryTouch.press.isPressed &&
-                   GameManager.Instance != null;
-        }
-
-        private void ProcessClickAt(Vector2 screenPosition)
-        {
-            Vector2 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
-            RaycastHit2D hit = Physics2D.Raycast(worldPosition, Vector2.zero, Mathf.Infinity, balloonLayerMask);
-
-            if (hit.collider != null)
+            // For touch, try to map to fingerId so UI can disambiguate.
+            // If Touchscreen exists and has an active primary touch, use its touchId.
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
             {
-                TryPopBalloon(hit.collider.gameObject);
+                int touchId = Touchscreen.current.primaryTouch.touchId.ReadValue();
+                return EventSystem.current.IsPointerOverGameObject(touchId);
+            }
+
+            // Fallback for mouse/other pointers
+            return EventSystem.current.IsPointerOverGameObject();
+        }
+
+        private void ProcessPointerAt(Vector2 screenPosition)
+        {
+            // Convert screen to world; ensure we pass a sensible z so ScreenToWorldPoint works in any camera mode
+            var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
+            Vector2 worldPoint = mainCamera.ScreenToWorldPoint(sp);
+
+            // OverlapPoint is ideal for a tap/click on 2D colliders
+            Collider2D hit = Physics2D.OverlapPoint(worldPoint, balloonLayerMask);
+            if (hit != null)
+            {
+                var balloon = hit.GetComponent<BalloonController>();
+                if (balloon != null)
+                {
+                    balloon.Pop();
+                }
             }
         }
 
-        private void TryPopBalloon(GameObject hitObject)
-        {
-            BalloonController balloon = hitObject.GetComponent<BalloonController>();
-
-            if (balloon != null)
-            {
-                balloon.Pop();
-            }
-        }
-
-        // Legacy Update method for fallback input handling
+        // Optional: legacy fallback if new Input System objects aren't available/enabled
+        // (kept minimal; you can remove this if you don't need it)
         private void Update()
         {
-            // Only use legacy input if new Input System actions are not working
-            if ((clickAction == null || !clickAction.enabled) &&
-                (touchAction == null || !touchAction.enabled))
-            {
-                HandleLegacyInput();
-            }
-        }
+            if (pressAction is { enabled: true } && positionAction is { enabled: true }) return;
+            if (!CanProcessNow()) return;
 
-        private void HandleLegacyInput()
-        {
-            // Handle mouse input
+            // Mouse fallback
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                if (CanProcessInput())
+                if (!IsPointerOverUI())
                 {
-                    Vector2 screenPosition = Mouse.current.position.ReadValue();
-                    ProcessClickAt(screenPosition);
+                    ProcessPointerAt(Mouse.current.position.ReadValue());
                 }
                 return;
             }
 
-            // Handle touch input - check for touch began
+            // Touch fallback (primary)
             if (Touchscreen.current != null)
             {
-                var primaryTouch = Touchscreen.current.primaryTouch;
-                if (primaryTouch.press.wasPressedThisFrame)
+                var t = Touchscreen.current.primaryTouch;
+                if (t.press.wasPressedThisFrame)
                 {
-                    if (CanProcessLegacyTouchInput())
+                    if (!IsPointerOverUI())
                     {
-                        Vector2 screenPosition = primaryTouch.position.ReadValue();
-                        ProcessClickAt(screenPosition);
+                        ProcessPointerAt(t.position.ReadValue());
                     }
                 }
             }
-        }
-
-        private bool CanProcessLegacyTouchInput()
-        {
-            return mainCamera != null &&
-                   Touchscreen.current != null &&
-                   GameManager.Instance != null;
         }
     }
 }

@@ -46,11 +46,6 @@ namespace ChromaPop
             LeanTween.alphaCanvas(gameOverScreen.GetComponent<CanvasGroup>(), 1f, .5f).setDelay(0.25f);
         }
 
-        /// <summary>
-        /// Shakes the main camera for a brief moment when a balloon pops
-        /// </summary>
-        /// <param name="intensity">Shake intensity (default: 0.1f)</param>
-        /// <param name="duration">Shake duration (default: 0.2f)</param>
         public void ShakeCamera(float intensity = 0.1f, float duration = 0.2f)
         {
             Camera mainCamera = Camera.main;
@@ -60,18 +55,37 @@ namespace ChromaPop
                 return;
             }
 
-            Vector3 originalPosition = mainCamera.transform.position;
+            Transform camTransform = mainCamera.transform;
+            Vector3 originalPosition = camTransform.localPosition;
 
-            // Create a shake sequence
-            LeanTween.moveX(mainCamera.gameObject, originalPosition.x + intensity, duration * 0.1f)
-                .setEase(LeanTweenType.easeShake)
-                .setLoopPingPong(Mathf.RoundToInt(duration * 20))
-                .setOnComplete(() =>
+            int shakeCount = Mathf.CeilToInt(duration / 0.02f); // 50 FPS shake steps
+            float shakeDuration = duration / shakeCount;
+
+            // Cancel any existing tweens on the camera to prevent overlap
+            LeanTween.cancel(mainCamera.gameObject);
+
+            void ShakeStep(int count)
+            {
+                if (count <= 0)
                 {
-                    // Reset camera to original position
-                    mainCamera.transform.position = originalPosition;
-                });
+                    camTransform.localPosition = originalPosition; // Reset
+                    return;
+                }
+
+                Vector3 randomOffset = new Vector3(
+                    Random.Range(-intensity, intensity),
+                    Random.Range(-intensity, intensity),
+                    0f
+                );
+
+                LeanTween.moveLocal(mainCamera.gameObject, originalPosition + randomOffset, shakeDuration)
+                    .setEase(LeanTweenType.easeShake)
+                    .setOnComplete(() => ShakeStep(count - 1));
+            }
+
+            ShakeStep(shakeCount);
         }
+
 
         public void InitSequenceTransitions()
         {

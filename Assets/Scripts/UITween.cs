@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 namespace ChromaPop
@@ -8,6 +9,7 @@ namespace ChromaPop
 
         [SerializeField] private GameObject titleArea;
         [SerializeField] private GameObject buttonStart;
+        [SerializeField] private TextMeshProUGUI gameVersionText;
 
         private void Awake()
         {
@@ -26,6 +28,7 @@ namespace ChromaPop
             if (titleArea != null && buttonStart != null)
             {
                 HomeTransitions();
+                gameVersionText.text = $"Version {Application.version}";
             }
         }
 
