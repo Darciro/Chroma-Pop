@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems; // for UI blocking
 using UnityEngine.InputSystem;
 
 namespace ChromaPop
@@ -25,6 +24,10 @@ namespace ChromaPop
         // One map with two actions: press and position
         private InputAction pressAction;
         private InputAction positionAction;
+
+        // Input processing state
+        private bool hasPendingInput = false;
+        private Vector2 pendingInputPosition;
 
         private void Awake()
         {
@@ -61,19 +64,17 @@ namespace ChromaPop
 
         private void SetupInputActions()
         {
-            // Use the abstract <Pointer> device so the same binding covers mouse *and* touch.
-            // Press interaction set to fire on "press" (you can switch to release by using Press(behavior=1))
             pressAction = new InputAction(
                 name: "PointerPress",
                 type: InputActionType.Button,
-                binding: "*/press", // matches <Pointer>/press, works for Mouse and Touch primary
-                interactions: "press" // change to "press(behavior=1)" if you want on-release instead
+                binding: "<Pointer>/press",
+                interactions: "press"
             );
 
             positionAction = new InputAction(
                 name: "PointerPosition",
                 type: InputActionType.Value,
-                binding: "*/position" // matches <Pointer>/position (mouse or primary touch)
+                binding: "<Pointer>/position"
             );
         }
 
@@ -81,12 +82,29 @@ namespace ChromaPop
         {
             if (!CanProcessNow()) return;
 
-            // If pointer is over UI, ignore (prevents popping through buttons, etc.)
-            if (IsPointerOverUI()) return;
+            Vector2 screenPos = Vector2.zero;
 
-            // Read the pointer position (mouse or primary touch)
-            Vector2 screenPos = positionAction.ReadValue<Vector2>();
-            ProcessPointerAt(screenPos);
+            if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+            {
+                screenPos = Mouse.current.position.ReadValue();
+            }
+            else if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            {
+                screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
+            }
+            else
+            {
+                screenPos = positionAction.ReadValue<Vector2>();
+            }
+
+            if (screenPos.x < 0 || screenPos.x > Screen.width ||
+                screenPos.y < 0 || screenPos.y > Screen.height)
+            {
+                return;
+            }
+
+            hasPendingInput = true;
+            pendingInputPosition = screenPos;
         }
 
         private bool CanProcessNow()
@@ -97,32 +115,24 @@ namespace ChromaPop
             return true;
         }
 
-        private bool IsPointerOverUI()
-        {
-            // Works for mouse and touch (primary). For multi-touch UI checks,
-            // you could pass a fingerId-specific PointerEventData if needed.
-            if (EventSystem.current == null) return false;
-
-            // For touch, try to map to fingerId so UI can disambiguate.
-            // If Touchscreen exists and has an active primary touch, use its touchId.
-            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-            {
-                int touchId = Touchscreen.current.primaryTouch.touchId.ReadValue();
-                return EventSystem.current.IsPointerOverGameObject(touchId);
-            }
-
-            // Fallback for mouse/other pointers
-            return EventSystem.current.IsPointerOverGameObject();
-        }
-
         private void ProcessPointerAt(Vector2 screenPosition)
         {
-            // Convert screen to world; ensure we pass a sensible z so ScreenToWorldPoint works in any camera mode
-            var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
-            Vector2 worldPoint = mainCamera.ScreenToWorldPoint(sp);
+            Vector3 worldPoint;
 
-            // OverlapPoint is ideal for a tap/click on 2D colliders
-            Collider2D hit = Physics2D.OverlapPoint(worldPoint, balloonLayerMask);
+            if (mainCamera.orthographic)
+            {
+                var sp = new Vector3(screenPosition.x, screenPosition.y, mainCamera.nearClipPlane);
+                worldPoint = mainCamera.ScreenToWorldPoint(sp);
+            }
+            else
+            {
+                var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
+                worldPoint = mainCamera.ScreenToWorldPoint(sp);
+            }
+
+            float hitRadius = 0.1f;
+            Collider2D hit = Physics2D.OverlapCircle(worldPoint, hitRadius, balloonLayerMask);
+
             if (hit != null)
             {
                 var balloon = hit.GetComponent<BalloonController>();
@@ -132,33 +142,43 @@ namespace ChromaPop
                 }
             }
         }
-
-        // Optional: legacy fallback if new Input System objects aren't available/enabled
-        // (kept minimal; you can remove this if you don't need it)
         private void Update()
         {
-            if (pressAction is { enabled: true } && positionAction is { enabled: true }) return;
+            if (hasPendingInput)
+            {
+                hasPendingInput = false;
+                ProcessPointerAt(pendingInputPosition);
+                return;
+            }
+
+            if (pressAction != null && pressAction.enabled && positionAction != null && positionAction.enabled)
+                return;
+
             if (!CanProcessNow()) return;
 
-            // Mouse fallback
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                if (!IsPointerOverUI())
+                Vector2 mousePos = Mouse.current.position.ReadValue();
+
+                if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
+                    mousePos.y >= 0 && mousePos.y <= Screen.height)
                 {
-                    ProcessPointerAt(Mouse.current.position.ReadValue());
+                    ProcessPointerAt(mousePos);
                 }
                 return;
             }
 
-            // Touch fallback (primary)
             if (Touchscreen.current != null)
             {
                 var t = Touchscreen.current.primaryTouch;
                 if (t.press.wasPressedThisFrame)
                 {
-                    if (!IsPointerOverUI())
+                    Vector2 touchPos = t.position.ReadValue();
+
+                    if (touchPos.x >= 0 && touchPos.x <= Screen.width &&
+                        touchPos.y >= 0 && touchPos.y <= Screen.height)
                     {
-                        ProcessPointerAt(t.position.ReadValue());
+                        ProcessPointerAt(touchPos);
                     }
                 }
             }

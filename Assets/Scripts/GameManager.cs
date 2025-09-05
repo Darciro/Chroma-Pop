@@ -1,5 +1,8 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace ChromaPop
 {
@@ -19,17 +22,24 @@ namespace ChromaPop
         [Header("Sequence UI")]
         [SerializeField] private RectTransform sequenceContainerGrid;
         [SerializeField] private GameObject colorTargetPrefab;
+        [SerializeField] private Image countdownSlider;
 
         [Header("Game Settings")]
         [SerializeField] private int startingHealth = 3;
         [SerializeField] private int sequenceLength = 3;
         [SerializeField] private int sequenceCompletionBonus = 10;
+        [SerializeField] private float countdownTime = 10f;
 
         // Game State
         private GameState gameState;
         private ScoreManager scoreManager;
         private HealthManager healthManager;
         private SequenceManager sequenceManager;
+
+        // Countdown variables
+        private float currentCountdownTime;
+        private bool countdownActive = false;
+        private bool isProcessingSequenceChange = false; // Prevent race conditions
 
         public bool gameStarted { get; private set; } = false;
 
@@ -42,6 +52,14 @@ namespace ChromaPop
         private void Start()
         {
             StartGame();
+        }
+
+        private void Update()
+        {
+            if (gameStarted && countdownActive)
+            {
+                UpdateCountdown();
+            }
         }
 
         private void InitializeSingleton()
@@ -62,6 +80,31 @@ namespace ChromaPop
             scoreManager = new ScoreManager(scoreText);
             healthManager = new HealthManager(healthText, startingHealth);
             sequenceManager = new SequenceManager(sequenceContainerGrid, colorTargetPrefab, sequenceLength);
+
+            // Initialize swipe handling
+            InitializeSwipeHandling();
+        }
+
+        private void InitializeSwipeHandling()
+        {
+            // Subscribe to swipe detector events
+            SwipeDetector.OnSwipeDetected += HandleSwipeDetected;
+        }
+
+        private void OnDestroy()
+        {
+            // Unsubscribe from events to prevent memory leaks
+            SwipeDetector.OnSwipeDetected -= HandleSwipeDetected;
+        }
+
+        private void HandleSwipeDetected(Vector2 swipeDirection)
+        {
+            // Only handle swipes when the game is active and not during other animations
+            if (gameStarted && !sequenceManager.IsAnimatingSwipe())
+            {
+                sequenceManager.HandleSwipe(swipeDirection);
+                // Note: Countdown continues uninterrupted during swipes
+            }
         }
 
         public void StartGame()
@@ -70,6 +113,7 @@ namespace ChromaPop
             gameStarted = true;
 
             sequenceManager.GenerateNewSequence();
+            // Don't start countdown here - wait for balloons to start spawning
             UpdateUI();
         }
 
@@ -80,10 +124,18 @@ namespace ChromaPop
             scoreManager.ResetScore();
             healthManager.ResetHealth(startingHealth);
             sequenceManager.ClearSequence();
+            countdownActive = false;
+            currentCountdownTime = countdownTime;
+            isProcessingSequenceChange = false; // Reset the flag
         }
 
         public void ValidateScore(BalloonColorEnum color)
         {
+            // Ensure the game is in a valid state to process input
+            if (!gameStarted || sequenceManager == null) return;
+
+            Debug.Log($"[GameManager] Validating balloon color: {color}. Current sequence index: {(sequenceManager != null ? "exists" : "null")}");
+
             if (sequenceManager.ValidateNextColor(color))
             {
                 OnCorrectSequence();
@@ -100,8 +152,14 @@ namespace ChromaPop
 
             if (sequenceManager.IsSequenceComplete())
             {
+                Debug.Log("[GameManager] Sequence completed! Generating new sequence.");
                 OnSequenceCompleted();
             }
+            else
+            {
+                Debug.Log("[GameManager] Correct balloon popped, continuing sequence.");
+            }
+            // Don't restart countdown for individual correct balloons - only when full sequence is complete
         }
 
         private void OnIncorrectSequence()
@@ -116,8 +174,64 @@ namespace ChromaPop
 
         private void OnSequenceCompleted()
         {
+            if (isProcessingSequenceChange)
+            {
+                Debug.Log("[GameManager] Sequence change already in progress, ignoring duplicate call.");
+                return;
+            }
+
+            isProcessingSequenceChange = true;
+            Debug.Log("[GameManager] OnSequenceCompleted called - generating new sequence and restarting countdown.");
             scoreManager.AddScore(sequenceCompletionBonus);
             sequenceManager.GenerateNewSequence();
+            StartCountdown(); // Restart countdown when sequence is completed
+            isProcessingSequenceChange = false;
+        }
+
+        private void StartCountdown()
+        {
+            currentCountdownTime = countdownTime;
+            countdownActive = true;
+            UpdateCountdownSlider();
+        }
+
+        private void UpdateCountdown()
+        {
+            if (currentCountdownTime > 0)
+            {
+                currentCountdownTime -= Time.deltaTime;
+                UpdateCountdownSlider();
+            }
+            else
+            {
+                OnCountdownExpired();
+            }
+        }
+
+        private void UpdateCountdownSlider()
+        {
+            if (countdownSlider != null)
+            {
+                float fillAmount = currentCountdownTime / countdownTime;
+                countdownSlider.fillAmount = fillAmount;
+            }
+        }
+
+        private void OnCountdownExpired()
+        {
+            if (isProcessingSequenceChange)
+            {
+                Debug.Log("[GameManager] Sequence change already in progress, ignoring countdown expiry.");
+                return;
+            }
+
+            isProcessingSequenceChange = true;
+            Debug.Log("[GameManager] Countdown expired! Generating new sequence.");
+            countdownActive = false;
+            // Restart the sequence when countdown reaches zero
+            sequenceManager.GenerateNewSequence();
+            StartCountdown();
+            isProcessingSequenceChange = false;
         }
 
         private void OnGameOver()
@@ -128,13 +242,20 @@ namespace ChromaPop
             ResetGameState();
         }
 
+        public void OnBalloonsStartSpawning()
+        {
+            // Start the countdown when balloons actually begin spawning
+            if (gameStarted)
+            {
+                StartCountdown();
+            }
+        }
+
         private void UpdateUI()
         {
             scoreManager.UpdateUI();
             healthManager.UpdateUI();
-        }
-
-        // Public API for external access
+        }        // Public API for external access
         public void AddScore(int amount) => scoreManager.AddScore(amount);
         public void SetScore(int value) => scoreManager.SetScore(value);
         public int GetScore() => scoreManager.GetScore();

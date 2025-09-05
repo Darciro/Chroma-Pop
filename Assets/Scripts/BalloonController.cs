@@ -141,6 +141,9 @@ namespace ChromaPop
         {
             if (isPopped) return;
 
+            // Additional protection: ensure the balloon is still active and hasn't been destroyed
+            if (this == null || gameObject == null || !gameObject.activeInHierarchy) return;
+
             isPopped = true;
             PlayPopSound();
             PlayPopAnimation();

@@ -25,6 +25,7 @@ namespace ChromaPop
 
         private readonly List<GameObject> spawnedBalloons = new List<GameObject>();
         private Coroutine spawningCoroutine;
+        private bool hasStartedSpawning = false;
 
         private void Start()
         {
@@ -38,6 +39,13 @@ namespace ChromaPop
 
             // Wait for the initial delay
             yield return new WaitForSeconds(initialDelayBeforeFirstSpawn);
+
+            // Notify GameManager that spawning is about to begin
+            if (GameManager.Instance != null && !hasStartedSpawning)
+            {
+                hasStartedSpawning = true;
+                GameManager.Instance.OnBalloonsStartSpawning();
+            }
 
             // Start the spawning loop
             while (true)
@@ -153,6 +161,7 @@ namespace ChromaPop
         public void StartSpawning()
         {
             StopSpawning(); // Stop any existing coroutine first
+            hasStartedSpawning = false; // Reset the flag when restarting
             spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
         }
 
@@ -166,6 +175,11 @@ namespace ChromaPop
                 }
             }
             spawnedBalloons.Clear();
+        }
+
+        public void ResetSpawningState()
+        {
+            hasStartedSpawning = false;
         }
     }
 }
