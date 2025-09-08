@@ -1,7 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace ChromaPop
@@ -35,6 +33,9 @@ namespace ChromaPop
         private ScoreManager scoreManager;
         private HealthManager healthManager;
         private SequenceManager sequenceManager;
+
+        [Header("References")]
+        [SerializeField] private BalloonSpawner balloonSpawner;
 
         // Countdown variables
         private float currentCountdownTime;
@@ -115,6 +116,11 @@ namespace ChromaPop
             sequenceManager.GenerateNewSequence();
             // Don't start countdown here - wait for balloons to start spawning
             UpdateUI();
+
+            if (balloonSpawner != null)
+            {
+                balloonSpawner.StartSpawning();
+            }
         }
 
         private void ResetGameState()
@@ -124,9 +130,17 @@ namespace ChromaPop
             scoreManager.ResetScore();
             healthManager.ResetHealth(startingHealth);
             sequenceManager.ClearSequence();
+
             countdownActive = false;
             currentCountdownTime = countdownTime;
             isProcessingSequenceChange = false; // Reset the flag
+
+            if (balloonSpawner != null)
+            {
+                balloonSpawner.StopSpawning();
+                balloonSpawner.ClearAllBalloons();
+                balloonSpawner.ResetSpawningState();
+            }
         }
 
         public void ValidateScore(BalloonColorEnum color)
@@ -238,8 +252,20 @@ namespace ChromaPop
         {
             finalScoreText.text = GetScore().ToString();
             gameStarted = false;
+            countdownActive = false;
+
+            if (balloonSpawner != null)
+            {
+                balloonSpawner.StopSpawning();
+                balloonSpawner.ClearAllBalloons();
+            }
+
+            sequenceManager.ClearSequence();
+
+            currentCountdownTime = 0f;
+            UpdateCountdownSlider();
+
             GameTween.Instance.InitGameOverTransitions();
-            ResetGameState();
         }
 
         public void OnBalloonsStartSpawning()
@@ -255,7 +281,9 @@ namespace ChromaPop
         {
             scoreManager.UpdateUI();
             healthManager.UpdateUI();
-        }        // Public API for external access
+        }
+
+        // Public API for external access
         public void AddScore(int amount) => scoreManager.AddScore(amount);
         public void SetScore(int value) => scoreManager.SetScore(value);
         public int GetScore() => scoreManager.GetScore();
