@@ -20,13 +20,17 @@ namespace ChromaPop
 
         public void ChangeHealth(int delta)
         {
+            int oldHealth = health;
             health = Mathf.Max(0, health + delta);
+            Debug.Log($"[HealthManager] ChangeHealth: {oldHealth} -> {health} (delta: {delta})");
             UpdateUI();
         }
 
         public void SetHealth(int value)
         {
+            int oldHealth = health;
             health = Mathf.Max(0, value);
+            Debug.Log($"[HealthManager] SetHealth: {oldHealth} -> {health}");
             UpdateUI();
         }
 
@@ -34,7 +38,9 @@ namespace ChromaPop
 
         public void ResetHealth(int startingHealth)
         {
+            int oldHealth = health;
             health = startingHealth;
+            Debug.Log($"[HealthManager] ResetHealth: {oldHealth} -> {health} (starting health: {startingHealth})");
             UpdateUI();
         }
 
