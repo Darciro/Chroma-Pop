@@ -15,7 +15,7 @@ namespace ChromaPop
         [SerializeField] private TextMeshProUGUI scoreText;
         [SerializeField] private TextMeshProUGUI healthText;
         [SerializeField] private TextMeshProUGUI finalScoreText;
-        [SerializeField] private GameObject gameOverScreen;
+        // [SerializeField] private GameObject gameOverScreen;
 
         [Header("Sequence UI")]
         [SerializeField] private RectTransform sequenceContainerGrid;
@@ -126,12 +126,7 @@ namespace ChromaPop
             // For first session, wait for balloons to start spawning
             if (!isFirstGameSession)
             {
-                Debug.Log("[GameManager] Starting countdown immediately (restart scenario)");
                 StartCountdown();
-            }
-            else
-            {
-                Debug.Log("[GameManager] Waiting for balloons to spawn before starting countdown (first session)");
             }
         }
 
@@ -140,12 +135,11 @@ namespace ChromaPop
         /// </summary>
         public void RestartGame()
         {
-            Debug.Log("[GameManager] RestartGame called");
             StartGame();
         }
+
         private void ResetGameState()
         {
-            Debug.Log("[GameManager] ResetGameState called - This should only happen on true game restart!");
             GameTween.Instance.GameOverTransitions();
             gameState.Reset();
             scoreManager.ResetScore();
@@ -169,7 +163,8 @@ namespace ChromaPop
             // Ensure the game is in a valid state to process input
             if (!gameStarted || sequenceManager == null) return;
 
-            Debug.Log($"[GameManager] Validating balloon color: {color}. Current sequence index: {(sequenceManager != null ? "exists" : "null")}");
+            // Prevent validation during sequence changes to avoid race conditions
+            if (isProcessingSequenceChange) return;
 
             if (sequenceManager.ValidateNextColor(color))
             {
@@ -187,12 +182,7 @@ namespace ChromaPop
 
             if (sequenceManager.IsSequenceComplete())
             {
-                Debug.Log("[GameManager] Sequence completed! Generating new sequence.");
                 OnSequenceCompleted();
-            }
-            else
-            {
-                Debug.Log("[GameManager] Correct balloon popped, continuing sequence.");
             }
             // Don't restart countdown for individual correct balloons - only when full sequence is complete
         }
@@ -211,26 +201,22 @@ namespace ChromaPop
         {
             if (isProcessingSequenceChange)
             {
-                Debug.Log("[GameManager] Sequence change already in progress, ignoring duplicate call.");
                 return;
             }
 
             isProcessingSequenceChange = true;
             int currentHealth = healthManager.GetHealth();
-            Debug.Log($"[GameManager] OnSequenceCompleted called - Health before: {currentHealth}. Generating new sequence and restarting countdown.");
 
             scoreManager.AddScore(sequenceCompletionBonus);
             sequenceManager.GenerateNewSequence();
             StartCountdown(); // Restart countdown when sequence is completed
 
             int healthAfter = healthManager.GetHealth();
-            Debug.Log($"[GameManager] OnSequenceCompleted finished - Health after: {healthAfter}");
             isProcessingSequenceChange = false;
         }
 
         private void StartCountdown()
         {
-            Debug.Log("[GameManager] StartCountdown called");
             currentCountdownTime = countdownTime;
             countdownActive = true;
             UpdateCountdownSlider();
@@ -261,12 +247,10 @@ namespace ChromaPop
         {
             if (isProcessingSequenceChange)
             {
-                Debug.Log("[GameManager] Sequence change already in progress, ignoring countdown expiry.");
                 return;
             }
 
             isProcessingSequenceChange = true;
-            Debug.Log("[GameManager] Countdown expired! Generating new sequence.");
             countdownActive = false;
             // Restart the sequence when countdown reaches zero
             sequenceManager.GenerateNewSequence();
@@ -299,14 +283,12 @@ namespace ChromaPop
             // Start the countdown when balloons actually begin spawning
             if (gameStarted && !countdownActive)
             {
-                Debug.Log("[GameManager] Starting countdown due to balloons spawning");
                 StartCountdown();
             }
 
             // Mark that we've completed the first game session
             if (isFirstGameSession)
             {
-                Debug.Log("[GameManager] First game session completed, future restarts will start countdown immediately");
                 isFirstGameSession = false;
             }
         }

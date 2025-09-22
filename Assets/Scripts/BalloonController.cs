@@ -45,6 +45,13 @@ namespace ChromaPop
         private void Awake()
         {
             CacheComponents();
+
+            // Ensure this balloon has the correct tag for input detection
+            if (!gameObject.CompareTag("Balloon"))
+            {
+                gameObject.tag = "Balloon";
+                Debug.Log($"Set tag 'Balloon' on {gameObject.name}");
+            }
         }
 
         private void FixedUpdate()

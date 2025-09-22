@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using ChromaPop;
 using UnityEngine;
-using BalloonColorEnum = ChromaPop.BalloonColorEnum;
 
 namespace ChromaPop
 {
@@ -43,7 +41,6 @@ namespace ChromaPop
             // Notify GameManager that spawning is about to begin
             if (GameManager.Instance != null && !hasStartedSpawning)
             {
-                Debug.Log("[BalloonSpawner] Notifying GameManager that balloons are starting to spawn");
                 hasStartedSpawning = true;
                 GameManager.Instance.OnBalloonsStartSpawning();
             }
@@ -161,7 +158,6 @@ namespace ChromaPop
 
         public void StartSpawning()
         {
-            Debug.Log("[BalloonSpawner] StartSpawning called");
             StopSpawning(); // Stop any existing coroutine first
             hasStartedSpawning = false; // Reset the flag when restarting
             spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
@@ -181,7 +177,6 @@ namespace ChromaPop
 
         public void ResetSpawningState()
         {
-            Debug.Log("[BalloonSpawner] Resetting spawning state");
             hasStartedSpawning = false;
         }
     }

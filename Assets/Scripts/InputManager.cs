@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace ChromaPop
@@ -112,6 +113,10 @@ namespace ChromaPop
             if (mainCamera == null) return false;
             if (ignoreWhenPaused && Time.timeScale == 0f) return false;
             if (GameManager.Instance == null) return false;
+
+            // Additional check: don't process input if game is not started
+            if (!GameManager.Instance.gameStarted) return false;
+
             return true;
         }
 
@@ -142,6 +147,7 @@ namespace ChromaPop
                 }
             }
         }
+
         private void Update()
         {
             if (hasPendingInput)

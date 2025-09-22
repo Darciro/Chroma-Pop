@@ -40,12 +40,10 @@ namespace ChromaPop
         /// </summary>
         public void GenerateNewSequence(bool withSwipeAnimation = false, Vector2 swipeDirection = default)
         {
-            Debug.Log($"[SequenceManager] GenerateNewSequence called. WithSwipeAnimation: {withSwipeAnimation}");
             isSwipeSequence = withSwipeAnimation; // Track if this is a swipe sequence
 
             if (withSwipeAnimation && sequenceObjects.Count > 0)
             {
-                Debug.Log("[SequenceManager] Starting swipe animation transition");
                 // Animate current items sliding off, then create new sequence
                 AnimateSwipeTransition(swipeDirection, () =>
                 {
@@ -54,7 +52,6 @@ namespace ChromaPop
             }
             else
             {
-                Debug.Log("[SequenceManager] Generating standard sequence");
                 // Standard sequence generation
                 ClearSequence();
                 CreateSequenceObjects();
@@ -228,22 +225,25 @@ namespace ChromaPop
 
         public bool ValidateNextColor(BalloonColorEnum color)
         {
+            // Don't validate during swipe animations to prevent race conditions
+            if (isAnimatingSwipe)
+            {
+                return false;
+            }
+
             // Ensure we have a valid sequence and index
             if (colorSequence == null || colorSequence.Count == 0 ||
                 currentSequenceIndex < 0 || currentSequenceIndex >= colorSequence.Count)
             {
-                Debug.LogWarning($"[SequenceManager] Invalid sequence state - colorSequence count: {colorSequence?.Count ?? 0}, currentIndex: {currentSequenceIndex}");
                 return false;
             }
 
             bool isCorrect = colorSequence[currentSequenceIndex] == color;
-            Debug.Log($"[SequenceManager] Validating color {color} at index {currentSequenceIndex}. Expected: {colorSequence[currentSequenceIndex]}. Correct: {isCorrect}");
 
             if (isCorrect)
             {
                 MarkSequenceItemAsCompleted(currentSequenceIndex);
                 currentSequenceIndex++;
-                Debug.Log($"[SequenceManager] Progress updated. New index: {currentSequenceIndex}/{colorSequence.Count}");
             }
 
             return isCorrect;
@@ -274,7 +274,6 @@ namespace ChromaPop
         public bool IsSequenceComplete()
         {
             bool isComplete = currentSequenceIndex >= colorSequence.Count;
-            Debug.Log($"[SequenceManager] IsSequenceComplete check: {currentSequenceIndex}/{colorSequence.Count} = {isComplete}");
             return isComplete;
         }
 

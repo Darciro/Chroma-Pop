@@ -40,13 +40,13 @@ namespace ChromaPop
 
         public void GameOverTransitions()
         {
-            // Game Over Screen
+            gameOverScreen.SetActive(false);
             LeanTween.alphaCanvas(gameOverScreen.GetComponent<CanvasGroup>(), 0, 0);
         }
 
         public void InitGameOverTransitions()
         {
-            // Game Over Screen
+            gameOverScreen.SetActive(true);
             LeanTween.alphaCanvas(gameOverScreen.GetComponent<CanvasGroup>(), 1f, .5f).setDelay(0.25f);
         }
 
