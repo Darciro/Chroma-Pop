@@ -30,6 +30,10 @@ namespace ChromaPop
             spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
         }
 
+        /// <summary>
+        /// Waits for game start conditions and then begins balloon spawning loop.
+        /// </summary>
+        /// <returns>Coroutine enumerator</returns>
         private IEnumerator WaitAndStartSpawning()
         {
             // Wait until the game allows spawning
@@ -60,17 +64,23 @@ namespace ChromaPop
             }
         }
 
-        private void Update()
-        {
-            // Only cleanup balloons in Update
-            CleanupBalloons();
-        }
-
+        /// <summary>
+        /// Checks if balloons should currently be spawned.
+        /// </summary>
+        /// <returns>True if conditions allow balloon spawning</returns>
         private bool ShouldSpawnBalloons()
         {
             return GameManager.Instance != null && GameManager.Instance.gameStarted;
         }
 
+        private void Update()
+        {
+            CleanupBalloons();
+        }
+
+        /// <summary>
+        /// Spawns a new balloon at a random position with random color and speed.
+        /// </summary>
         private void SpawnBalloon()
         {
             if (balloonPrefab == null)
@@ -86,12 +96,20 @@ namespace ChromaPop
             spawnedBalloons.Add(balloon);
         }
 
+        /// <summary>
+        /// Gets a random spawn position within the configured boundaries.
+        /// </summary>
+        /// <returns>Random spawn position</returns>
         private Vector3 GetRandomSpawnPosition()
         {
             float xPos = Random.Range(xMin, xMax);
             return new Vector3(xPos, ySpawn, 0f);
         }
 
+        /// <summary>
+        /// Configures a spawned balloon with random color and speed.
+        /// </summary>
+        /// <param name="balloon">The balloon GameObject to configure</param>
         private void ConfigureBalloon(GameObject balloon)
         {
             BalloonController balloonController = balloon.GetComponent<BalloonController>();
@@ -110,26 +128,38 @@ namespace ChromaPop
             balloonController.SetRandomFloatSpeed();
         }
 
+        /// <summary>
+        /// Gets a random balloon color from all available colors.
+        /// </summary>
+        /// <returns>Random balloon color enum value</returns>
         private BalloonColorEnum GetRandomBalloonColor()
         {
             var colorValues = System.Enum.GetValues(typeof(BalloonColorEnum));
             return (BalloonColorEnum)colorValues.GetValue(Random.Range(0, colorValues.Length));
         }
 
+        /// <summary>
+        /// Cleans up destroyed or out-of-bounds balloons from the spawned balloons list.
+        /// </summary>
         private void CleanupBalloons()
         {
             for (int i = spawnedBalloons.Count - 1; i >= 0; i--)
             {
                 GameObject balloon = spawnedBalloons[i];
 
-                if (ShouldRemoveBalloon(balloon, i))
+                if (ShouldRemoveBalloon(balloon))
                 {
                     RemoveBalloonFromList(i);
                 }
             }
         }
 
-        private bool ShouldRemoveBalloon(GameObject balloon, int index)
+        /// <summary>
+        /// Checks if a balloon should be removed from the spawned list.
+        /// </summary>
+        /// <param name="balloon">The balloon to check</param>
+        /// <returns>True if the balloon should be removed</returns>
+        private bool ShouldRemoveBalloon(GameObject balloon)
         {
             if (balloon == null) return true;
 
@@ -142,11 +172,18 @@ namespace ChromaPop
             return false;
         }
 
+        /// <summary>
+        /// Removes a balloon from the spawned balloons list at the specified index.
+        /// </summary>
+        /// <param name="index">Index of the balloon to remove</param>
         private void RemoveBalloonFromList(int index)
         {
             spawnedBalloons.RemoveAt(index);
         }
 
+        /// <summary>
+        /// Stops the current spawning coroutine.
+        /// </summary>
         public void StopSpawning()
         {
             if (spawningCoroutine != null)
@@ -156,6 +193,9 @@ namespace ChromaPop
             }
         }
 
+        /// <summary>
+        /// Starts the balloon spawning process.
+        /// </summary>
         public void StartSpawning()
         {
             StopSpawning(); // Stop any existing coroutine first
@@ -163,6 +203,9 @@ namespace ChromaPop
             spawningCoroutine = StartCoroutine(WaitAndStartSpawning());
         }
 
+        /// <summary>
+        /// Destroys all currently spawned balloons and clears the list.
+        /// </summary>
         public void ClearAllBalloons()
         {
             foreach (GameObject balloon in spawnedBalloons)
@@ -175,6 +218,9 @@ namespace ChromaPop
             spawnedBalloons.Clear();
         }
 
+        /// <summary>
+        /// Resets the spawning state flags.
+        /// </summary>
         public void ResetSpawningState()
         {
             hasStartedSpawning = false;

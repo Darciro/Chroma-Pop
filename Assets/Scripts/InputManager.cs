@@ -7,7 +7,7 @@ namespace ChromaPop
     /// <summary>
     /// Unified pointer input (mouse + touch) using the new Input System.
     /// - Single InputAction map for press + position (covers editor, desktop, and mobile).
-    /// - Ignores presses over UI.
+    /// - Blocks balloon interactions when the pointer is over UI elements.
     /// - Works with both orthographic and perspective 2D cameras.
     /// </summary>
     public class InputManager : MonoBehaviour
@@ -65,38 +65,19 @@ namespace ChromaPop
 
         private void SetupInputActions()
         {
-            pressAction = new InputAction(
-                name: "PointerPress",
-                type: InputActionType.Button,
-                binding: "<Pointer>/press",
-                interactions: "press"
-            );
+            pressAction = new InputAction("Press", binding: "<Mouse>/leftButton");
+            pressAction.AddBinding("<Touchscreen>/primaryTouch/press");
 
-            positionAction = new InputAction(
-                name: "PointerPosition",
-                type: InputActionType.Value,
-                binding: "<Pointer>/position"
-            );
+            positionAction = new InputAction("Position", binding: "<Mouse>/position");
+            positionAction.AddBinding("<Touchscreen>/primaryTouch/position");
         }
 
         private void OnPressPerformed(InputAction.CallbackContext ctx)
         {
             if (!CanProcessNow()) return;
 
-            Vector2 screenPos = Vector2.zero;
-
-            if (Mouse.current != null && Mouse.current.leftButton.isPressed)
-            {
-                screenPos = Mouse.current.position.ReadValue();
-            }
-            else if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
-            {
-                screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
-            }
-            else
-            {
-                screenPos = positionAction.ReadValue<Vector2>();
-            }
+            // Defer processing to Update()
+            Vector2 screenPos = positionAction.ReadValue<Vector2>();
 
             if (screenPos.x < 0 || screenPos.x > Screen.width ||
                 screenPos.y < 0 || screenPos.y > Screen.height)
@@ -120,25 +101,30 @@ namespace ChromaPop
             return true;
         }
 
+        /// <summary>
+        /// Checks if the pointer is over a UI element
+        /// </summary>
+        private bool IsPointerOverUI()
+        {
+            if (EventSystem.current == null)
+                return false;
+
+            return EventSystem.current.IsPointerOverGameObject(Pointer.current?.deviceId ?? -1);
+        }
+
+        /// <summary>
+        /// Processes pointer input at the specified screen position and attempts to pop a balloon.
+        /// Validates tag, collider, and ensures the balloon is not behind UI elements.
+        /// </summary>
+        /// <param name="screenPosition">The screen position of the input</param>
         private void ProcessPointerAt(Vector2 screenPosition)
         {
-            Vector3 worldPoint;
-
-            if (mainCamera.orthographic)
-            {
-                var sp = new Vector3(screenPosition.x, screenPosition.y, mainCamera.nearClipPlane);
-                worldPoint = mainCamera.ScreenToWorldPoint(sp);
-            }
-            else
-            {
-                var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
-                worldPoint = mainCamera.ScreenToWorldPoint(sp);
-            }
+            Vector3 worldPoint = GetWorldPointFromScreenPosition(screenPosition);
 
             float hitRadius = 0.1f;
             Collider2D hit = Physics2D.OverlapCircle(worldPoint, hitRadius, balloonLayerMask);
 
-            if (hit != null)
+            if (hit != null && IsValidBalloonTarget(hit))
             {
                 var balloon = hit.GetComponent<BalloonController>();
                 if (balloon != null)
@@ -148,20 +134,77 @@ namespace ChromaPop
             }
         }
 
+        /// <summary>
+        /// Converts screen position to world position based on camera type.
+        /// </summary>
+        /// <param name="screenPosition">Screen position to convert</param>
+        /// <returns>World position</returns>
+        private Vector3 GetWorldPointFromScreenPosition(Vector2 screenPosition)
+        {
+            if (mainCamera.orthographic)
+            {
+                var sp = new Vector3(screenPosition.x, screenPosition.y, mainCamera.nearClipPlane);
+                return mainCamera.ScreenToWorldPoint(sp);
+            }
+            else
+            {
+                var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
+                return mainCamera.ScreenToWorldPoint(sp);
+            }
+        }
+
+        /// <summary>
+        /// Validates if the hit collider represents a valid balloon target.
+        /// Checks for correct tag and ensures the balloon is not already popped.
+        /// </summary>
+        /// <param name="hit">The collider that was hit</param>
+        /// <returns>True if the target is a valid balloon</returns>
+        private bool IsValidBalloonTarget(Collider2D hit)
+        {
+            // Check if the object has the correct "Balloon" tag
+            if (!hit.CompareTag("Balloon"))
+            {
+                return false;
+            }
+
+            // Ensure the collider is active and enabled
+            if (!hit.enabled || !hit.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
+            // Check if balloon controller exists and balloon is not already popped
+            var balloonController = hit.GetComponent<BalloonController>();
+            if (balloonController == null || balloonController.IsPopped())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private void Update()
         {
+            if (!CanProcessNow())
+                return;
+
+            // Process deferred input from input system
             if (hasPendingInput)
             {
                 hasPendingInput = false;
-                ProcessPointerAt(pendingInputPosition);
+
+                if (!IsPointerOverUI())
+                {
+                    ProcessPointerAt(pendingInputPosition);
+                }
+
                 return;
             }
 
-            if (pressAction != null && pressAction.enabled && positionAction != null && positionAction.enabled)
-                return;
+            // Process fallback input (for mouse or touch input not triggering InputAction)
+            if (IsPointerOverUI()) return;
 
-            if (!CanProcessNow()) return;
-
+            // Mouse input fallback
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
                 Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -170,10 +213,11 @@ namespace ChromaPop
                     mousePos.y >= 0 && mousePos.y <= Screen.height)
                 {
                     ProcessPointerAt(mousePos);
+                    return;
                 }
-                return;
             }
 
+            // Touch input fallback
             if (Touchscreen.current != null)
             {
                 var t = Touchscreen.current.primaryTouch;
@@ -189,5 +233,6 @@ namespace ChromaPop
                 }
             }
         }
+
     }
 }

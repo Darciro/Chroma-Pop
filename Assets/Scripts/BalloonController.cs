@@ -139,11 +139,28 @@ namespace ChromaPop
             return null;
         }
 
+        /// <summary>
+        /// Gets the current balloon color.
+        /// </summary>
+        /// <returns>The balloon's current color enum value</returns>
         public BalloonColorEnum GetBalloonColor()
         {
             return currentBalloonColorData?.Color ?? BalloonColorEnum.Blue;
         }
 
+        /// <summary>
+        /// Gets whether this balloon has been popped.
+        /// </summary>
+        /// <returns>True if the balloon has been popped</returns>
+        public bool IsPopped()
+        {
+            return isPopped;
+        }
+
+        /// <summary>
+        /// Pops the balloon with sound, animation, and game state updates.
+        /// Includes protection against double-popping and invalid state.
+        /// </summary>
         public void Pop()
         {
             if (isPopped) return;

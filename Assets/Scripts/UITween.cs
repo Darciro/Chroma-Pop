@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace ChromaPop
 {
+    /// <summary>
+    /// Handles UI animations and transitions for the main menu and title screen.
+    /// </summary>
     public class UITween : MonoBehaviour
     {
         public static UITween Instance { get; private set; }
@@ -23,15 +26,21 @@ namespace ChromaPop
             DontDestroyOnLoad(gameObject);
         }
 
-        void Start()
+        private void Start()
         {
             if (titleArea != null && buttonStart != null)
             {
                 HomeTransitions();
-                gameVersionText.text = $"Version {Application.version}";
+                if (gameVersionText != null)
+                {
+                    gameVersionText.text = $"Version {Application.version}";
+                }
             }
         }
 
+        /// <summary>
+        /// Initializes home screen elements to their starting animation state.
+        /// </summary>
         private void HomeTransitions()
         {
             // Logo area
@@ -44,6 +53,9 @@ namespace ChromaPop
             InitHomeTransitions();
         }
 
+        /// <summary>
+        /// Plays the home screen entrance animations with proper timing and easing.
+        /// </summary>
         private void InitHomeTransitions()
         {
             // Logo area

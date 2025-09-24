@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace ChromaPop
 {
+    /// <summary>
+    /// Handles all animation and visual effects for the game including camera shake,
+    /// UI transitions, and sequence animations.
+    /// </summary>
     public class GameTween : MonoBehaviour
     {
         public static GameTween Instance { get; private set; }
@@ -25,7 +29,7 @@ namespace ChromaPop
             DontDestroyOnLoad(gameObject);
         }
 
-        void Start()
+        private void Start()
         {
             if (gameOverScreen != null)
             {
@@ -38,23 +42,32 @@ namespace ChromaPop
             }
         }
 
+        /// <summary>
+        /// Hides the game over screen by setting alpha to 0.
+        /// </summary>
         public void GameOverTransitions()
         {
             gameOverScreen.SetActive(false);
             LeanTween.alphaCanvas(gameOverScreen.GetComponent<CanvasGroup>(), 0, 0);
         }
 
+        /// <summary>
+        /// Shows the game over screen with fade-in animation.
+        /// </summary>
         public void InitGameOverTransitions()
         {
             gameOverScreen.SetActive(true);
             LeanTween.alphaCanvas(gameOverScreen.GetComponent<CanvasGroup>(), 1f, .5f).setDelay(0.25f);
         }
 
+        /// <summary>
+        /// Performs a camera shake effect with specified intensity and duration.
+        /// Works independently of timeScale and is mobile-friendly.
+        /// </summary>
+        /// <param name="intensity">Shake intensity (default 0.1f)</param>
+        /// <param name="duration">Shake duration in seconds (default 0.2f)</param>
         public void ShakeCamera(float intensity = 0.1f, float duration = 0.2f)
         {
-            // Robust, timeScale-independent camera shake that also works on Android.
-            // Uses an inserted parent "anchor" to avoid conflicts with scripts that move the camera each frame.
-
             Camera mainCamera = ResolveActiveCamera();
             if (mainCamera == null)
             {
@@ -78,7 +91,7 @@ namespace ChromaPop
             }
             LeanTween.cancel(_cameraShakeAnchor.gameObject);
 
-            Vector3 originalLocalPos = _cameraShakeAnchor.localPosition; // typically zero
+            Vector3 originalLocalPos = _cameraShakeAnchor.localPosition;
 
             // Drive shake via a single value tween with per-frame random offset and falloff
             var descr = LeanTween.value(_cameraShakeAnchor.gameObject, 0f, 1f, duration)
@@ -103,7 +116,11 @@ namespace ChromaPop
             _shakeTweenId = descr.id;
         }
 
-        // Inserts a parent "CameraShakeAnchor" above the camera if not already present
+        /// <summary>
+        /// Creates or retrieves a shake anchor parent for the camera to enable safe shaking.
+        /// </summary>
+        /// <param name="camTransform">The camera transform to anchor</param>
+        /// <returns>The shake anchor transform</returns>
         private Transform GetOrCreateShakeAnchor(Transform camTransform)
         {
             if (camTransform == null) return null;
@@ -137,7 +154,10 @@ namespace ChromaPop
             return anchor;
         }
 
-        // Attempts to get the active camera even if no object has the "MainCamera" tag (common on mobile builds)
+        /// <summary>
+        /// Attempts to find an active camera even if no MainCamera tag is present.
+        /// </summary>
+        /// <returns>The active camera or null if none found</returns>
         private Camera ResolveActiveCamera()
         {
             // Try the tagged main camera first
@@ -160,7 +180,10 @@ namespace ChromaPop
             return null;
         }
 
-
+        /// <summary>
+        /// Animates the sequence UI elements with staggered scale animations.
+        /// </summary>
+        /// <param name="fastTransition">Whether to use fast transition timing</param>
         public void InitSequenceTransitions(bool fastTransition = false)
         {
             // Animate each colorTarget child with staggered delays
