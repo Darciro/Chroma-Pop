@@ -74,54 +74,29 @@ namespace ChromaPop
 
         private void OnPressPerformed(InputAction.CallbackContext ctx)
         {
-            Debug.Log("[INPUT DEBUG] OnPressPerformed called");
-            
-            if (!CanProcessNow()) 
-            {
-                Debug.Log("[INPUT DEBUG] CanProcessNow() returned false");
-                return;
-            }
+            if (!CanProcessNow()) return;
 
             // Defer processing to Update()
             Vector2 screenPos = positionAction.ReadValue<Vector2>();
-            Debug.Log($"[INPUT DEBUG] Screen position: {screenPos}");
 
             if (screenPos.x < 0 || screenPos.x > Screen.width ||
                 screenPos.y < 0 || screenPos.y > Screen.height)
             {
-                Debug.Log("[INPUT DEBUG] Screen position out of bounds");
                 return;
             }
 
             hasPendingInput = true;
             pendingInputPosition = screenPos;
-            Debug.Log("[INPUT DEBUG] Input queued for processing");
         }
 
         private bool CanProcessNow()
         {
-            if (mainCamera == null) 
-            {
-                Debug.Log("[INPUT DEBUG] CanProcessNow: mainCamera is null");
-                return false;
-            }
-            if (ignoreWhenPaused && Time.timeScale == 0f) 
-            {
-                Debug.Log("[INPUT DEBUG] CanProcessNow: Game is paused");
-                return false;
-            }
-            if (GameManager.Instance == null) 
-            {
-                Debug.Log("[INPUT DEBUG] CanProcessNow: GameManager.Instance is null");
-                return false;
-            }
+            if (mainCamera == null) return false;
+            if (ignoreWhenPaused && Time.timeScale == 0f) return false;
+            if (GameManager.Instance == null) return false;
 
             // Additional check: don't process input if game is not started
-            if (!GameManager.Instance.gameStarted) 
-            {
-                Debug.Log("[INPUT DEBUG] CanProcessNow: Game not started");
-                return false;
-            }
+            if (!GameManager.Instance.gameStarted) return false;
 
             return true;
         }
@@ -161,24 +136,17 @@ namespace ChromaPop
         private void ProcessPointerAt(Vector2 screenPosition)
         {
             Vector3 worldPoint = GetWorldPointFromScreenPosition(screenPosition);
-            Debug.Log($"[INPUT DEBUG] Screen: {screenPosition}, World: {worldPoint}");
 
             float hitRadius = 0.1f;
             Collider2D hit = Physics2D.OverlapCircle(worldPoint, hitRadius, balloonLayerMask);
-            Debug.Log($"[INPUT DEBUG] Hit: {(hit != null ? hit.name : "null")}, LayerMask: {balloonLayerMask}");
 
             if (hit != null && IsValidBalloonTarget(hit))
             {
                 var balloon = hit.GetComponent<BalloonController>();
                 if (balloon != null)
                 {
-                    Debug.Log($"[INPUT DEBUG] Popping balloon: {balloon.name}");
                     balloon.Pop();
                 }
-            }
-            else if (hit != null)
-            {
-                Debug.Log($"[INPUT DEBUG] Invalid balloon target: {hit.name}");
             }
         }
 
@@ -241,16 +209,11 @@ namespace ChromaPop
             // Process deferred input from input system
             if (hasPendingInput)
             {
-                Debug.Log("[INPUT DEBUG] Processing pending input");
                 hasPendingInput = false;
 
                 if (!IsPointerOverUI())
                 {
                     ProcessPointerAt(pendingInputPosition);
-                }
-                else
-                {
-                    Debug.Log("[INPUT DEBUG] Input ignored - pointer over UI");
                 }
 
                 return;
@@ -262,7 +225,6 @@ namespace ChromaPop
             // Mouse input fallback
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             {
-                Debug.Log("[INPUT DEBUG] Processing fallback mouse input");
                 Vector2 mousePos = Mouse.current.position.ReadValue();
 
                 if (mousePos.x >= 0 && mousePos.x <= Screen.width &&
@@ -279,7 +241,6 @@ namespace ChromaPop
                 var t = Touchscreen.current.primaryTouch;
                 if (t.press.wasPressedThisFrame)
                 {
-                    Debug.Log("[INPUT DEBUG] Processing fallback touch input");
                     Vector2 touchPos = t.position.ReadValue();
 
                     if (touchPos.x >= 0 && touchPos.x <= Screen.width &&
