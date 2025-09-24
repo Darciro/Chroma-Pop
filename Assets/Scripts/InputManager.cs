@@ -109,7 +109,23 @@ namespace ChromaPop
             if (EventSystem.current == null)
                 return false;
 
-            return EventSystem.current.IsPointerOverGameObject(Pointer.current?.deviceId ?? -1);
+            // Unity 6 compatible UI detection for both mouse and touch
+            if (Mouse.current != null)
+            {
+                return EventSystem.current.IsPointerOverGameObject();
+            }
+
+            if (Touchscreen.current != null)
+            {
+                var touch = Touchscreen.current.primaryTouch;
+                if (touch.isInProgress)
+                {
+                    // For touch, use the touch ID - typically 0 for primary touch
+                    return EventSystem.current.IsPointerOverGameObject(0);
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -143,11 +159,13 @@ namespace ChromaPop
         {
             if (mainCamera.orthographic)
             {
-                var sp = new Vector3(screenPosition.x, screenPosition.y, mainCamera.nearClipPlane);
+                // For 2D orthographic camera, set z to camera's z position to ensure proper depth
+                var sp = new Vector3(screenPosition.x, screenPosition.y, -mainCamera.transform.position.z);
                 return mainCamera.ScreenToWorldPoint(sp);
             }
             else
             {
+                // For perspective camera, use distance from camera
                 var sp = new Vector3(screenPosition.x, screenPosition.y, Mathf.Abs(mainCamera.transform.position.z));
                 return mainCamera.ScreenToWorldPoint(sp);
             }
